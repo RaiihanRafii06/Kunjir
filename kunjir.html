@@ -1,0 +1,3964 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="WAVE KUNJIR - Sistem Monitoring Telemetri dan Peringatan Dini Bencana Pesisir & Tsunami Desa Kunjir, Kecamatan Rajabasa, Lampung Selatan. Terintegrasi sensor real-time dan analisis mitigasi kebencanaan.">
+<title>WAVE KUNJIR – Sistem Mitigasi & Peringatan Dini Pesisir Desa Kunjir</title>
+
+<!-- External Libraries -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Typography: Plus Jakarta Sans (Utama), Space Grotesk (Heading Data), JetBrains Mono (Telemetri) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   DESIGN SYSTEM: NATURAL MARITIME & DISASTER MITIGATION
+   Fokus: Kredibel, natural, berwibawa, berorientasi keselamatan warga
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    /* Nuansa Samudra & Slate Biru Alami (Bukan Neon AI) */
+    --bg-base:        #070d18;
+    --bg-surface:     #0c1626;
+    --bg-card:        rgba(15, 27, 46, 0.86);
+    --bg-card-hover:  rgba(20, 36, 62, 0.94);
+    --bg-elevated:    rgba(25, 44, 76, 0.75);
+
+    /* Garis & Border Alami */
+    --border:         rgba(255, 255, 255, 0.12);
+    --border-subtle:  rgba(255, 255, 255, 0.06);
+    --border-focus:   rgba(56, 189, 248, 0.5);
+
+    /* Tipografi Bersih & Kontras Tinggi */
+    --text-primary:   #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted:     #94a3b8;
+    --text-dim:       #64748b;
+
+    /* Aksen Kelautan & Pesisir */
+    --ocean-blue:     #0284c7;
+    --ocean-light:    #38bdf8;
+    --ocean-soft:     rgba(14, 165, 233, 0.15);
+    --coastal-sand:   #e2d9c8;
+
+    /* Palet Standar Mitigasi Bencana BNPB & BMKG */
+    --status-safe:    #10b981; /* Hijau Aman */
+    --status-safe-bg: rgba(16, 185, 129, 0.14);
+    --status-safe-border: rgba(16, 185, 129, 0.35);
+
+    --status-waspada: #f59e0b; /* Kuning Waspada */
+    --status-waspada-bg: rgba(245, 158, 11, 0.14);
+    --status-waspada-border: rgba(245, 158, 11, 0.4);
+
+    --status-siaga:   #ea580c; /* Oranye Siaga */
+    --status-siaga-bg: rgba(234, 88, 12, 0.16);
+    --status-siaga-border: rgba(234, 88, 12, 0.45);
+
+    --status-darurat: #dc2626; /* Merah Awas / Evakuasi */
+    --status-darurat-bg: rgba(220, 38, 38, 0.18);
+    --status-darurat-border: rgba(220, 38, 38, 0.55);
+
+    /* Bayangan Lembut Realistis (Ambient Shadows) */
+    --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-md:  0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --shadow-lg:  0 16px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+    /* Radius Sudut Rapi */
+    --radius-sm:  8px;
+    --radius-md:  14px;
+    --radius-lg:  20px;
+    --radius-full: 9999px;
+
+    --transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   BACKGROUND: FOTO PESISIR DESA KUNJIR DENGAN VIGNETTE NATURAL
+   Tanpa partikel jaring neon buatan AI. Foto asli pesisir Lampung Selatan.
+   ============================================================ */
+.bg-photo-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-photo {
+    position: absolute;
+    inset: 0;
+    background-image: url('bg-kunjir.jpg');
+    background-size: cover;
+    background-position: center 30%;
+    filter: brightness(0.72) contrast(1.08) saturate(1.05);
+    transform: scale(1.02);
+    transition: background-image 0.6s ease, transform 10s ease;
+}
+
+/* Overlay atmosferik laut: gelap di tengah teks, tetap memperlihatkan lanskap desa */
+.bg-gradient-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, 
+            rgba(7, 13, 24, 0.88) 0%, 
+            rgba(10, 20, 36, 0.78) 35%, 
+            rgba(7, 13, 24, 0.94) 100%
+        ),
+        radial-gradient(circle at 50% 10%, rgba(2, 132, 199, 0.12) 0%, transparent 60%);
+}
+
+/* Tekstur kontur topografi sangat halus & natural (opsional) */
+.bg-subtle-lines {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 0);
+    background-size: 28px 28px;
+}
+
+/* ============================================================
+   APP CONTAINER & GLASS PANELS
+   ============================================================ */
+.app {
+    position: relative;
+    z-index: 1;
+    max-width: 1560px;
+    margin: 0 auto;
+    padding: 20px 24px 60px;
+}
+
+.card-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+}
+
+.card-panel:hover {
+    border-color: var(--navy-border-hover, rgba(255, 255, 255, 0.22));
+}
+
+/* ============================================================
+   HEADER: BERWIBAWA & INSTANSIONAL (BADAN MITIGASI / POSKO)
+   ============================================================ */
+.header-wrapper {
+    margin-bottom: 20px;
+}
+
+/* Top bar instansi & lokasi desa */
+.header-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 18px;
+    margin-bottom: 12px;
+    background: rgba(12, 22, 38, 0.7);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    font-size: 0.74rem;
+    color: var(--text-muted);
+}
+
+.gov-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.gov-badge i { color: var(--ocean-light); }
+
+.coords-badge {
+    font-family: 'JetBrains Mono', monospace;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+}
+
+.coords-badge span { color: var(--text-secondary); font-weight: 600; }
+
+/* Main Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-radius: var(--radius-lg);
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.brand-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    flex-shrink: 0;
+}
+
+.brand-text h1 {
+    font-size: 1.32rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    color: #ffffff;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--ocean-soft);
+    color: var(--ocean-light);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    text-transform: uppercase;
+}
+
+.brand-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.brand-sub i { color: #f59e0b; font-size: 0.75rem; }
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Tombol Aksi Header */
+.btn-action-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-action-nav:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-action-nav.highlight {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+
+.btn-action-nav.highlight:hover {
+    background: rgba(16, 185, 129, 0.22);
+    color: #ffffff;
+}
+
+.count-pill {
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.25);
+    color: #a7f3d0;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+/* User Account Pill */
+.header-user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 12px 5px 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+}
+
+.user-avatar-mini {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0284c7, #0d9488);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.user-info-mini {
+    line-height: 1.2;
+    text-align: left;
+}
+
+.user-name-mini {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffffff;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-role-mini {
+    font-size: 0.66rem;
+    color: #34d399;
+    font-weight: 600;
+}
+
+.btn-logout-mini {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.82rem;
+    padding: 4px;
+    transition: color 0.2s;
+    margin-left: 2px;
+}
+
+.btn-logout-mini:hover { color: #f87171; }
+
+/* Status Live & Jam */
+.status-pill-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #34d399;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pulse-dot-natural {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+    animation: pulseWave 2s infinite ease-out;
+}
+
+@keyframes pulseWave {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.clock-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+.clock-box i { color: var(--ocean-light); font-size: 0.8rem; }
+
+/* ============================================================
+   PANEL KENDALI SIMULASI MITIGASI (UNTUK DEMO LOMBA)
+   Fitur nyata untuk menguji skenario bencana secara instan
+   ============================================================ */
+.sim-control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    margin-bottom: 20px;
+    background: rgba(15, 27, 46, 0.92);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: var(--radius-md);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.sim-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: var(--ocean-light);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.sim-buttons-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-sim {
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.74rem;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-sim:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+.btn-sim.sim-normal.active {
+    background: var(--status-safe-bg);
+    border-color: var(--status-safe-border);
+    color: #34d399;
+}
+
+.btn-sim.sim-waspada.active {
+    background: var(--status-waspada-bg);
+    border-color: var(--status-waspada-border);
+    color: #fbbf24;
+}
+
+.btn-sim.sim-siaga.active {
+    background: var(--status-siaga-bg);
+    border-color: var(--status-siaga-border);
+    color: #fb923c;
+}
+
+.btn-sim.sim-darurat.active {
+    background: var(--status-darurat-bg);
+    border-color: var(--status-darurat-border);
+    color: #f87171;
+}
+
+.siren-toggle-btn {
+    padding: 6px 13px;
+    border-radius: var(--radius-full);
+    font-size: 0.74rem;
+    font-weight: 700;
+    background: rgba(220, 38, 38, 0.15);
+    border: 1px solid rgba(220, 38, 38, 0.4);
+    color: #fca5a5;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.siren-toggle-btn:hover {
+    background: rgba(220, 38, 38, 0.3);
+    color: #ffffff;
+}
+
+.siren-toggle-btn.playing {
+    background: #dc2626;
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(220, 38, 38, 0.6);
+    animation: sirenBlink 1s infinite alternate;
+}
+
+@keyframes sirenBlink {
+    from { opacity: 0.85; }
+    to { opacity: 1; }
+}
+
+/* ============================================================
+   BANNER KONDISI BENCANA (BNPB / BMKG EARLY WARNING LEVEL)
+   Natural, tegas, jelas langkah evakuasinya bagi masyarakat
+   ============================================================ */
+.alert-banner {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 28px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.alert-banner::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 6px;
+    background: currentColor;
+}
+
+.banner-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.banner-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.banner-status-tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.banner-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    line-height: 1.2;
+    margin-bottom: 6px;
+}
+
+.banner-sub {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.banner-mitigation-action {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Warna Banner Berdasarkan Status Mitigasi */
+.banner-normal {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(12, 22, 38, 0.94) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+.banner-normal .banner-icon-box { background: linear-gradient(135deg, #10b981, #059669); }
+.banner-normal .banner-mitigation-action { color: #6ee7b7; }
+
+.banner-waspada {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(26, 20, 10, 0.94) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fbbf24;
+}
+.banner-waspada .banner-icon-box { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.banner-waspada .banner-mitigation-action { color: #fde68a; }
+
+.banner-siaga {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.22) 0%, rgba(32, 18, 12, 0.94) 100%);
+    border: 1px solid rgba(234, 88, 12, 0.5);
+    color: #fb923c;
+}
+.banner-siaga .banner-icon-box { background: linear-gradient(135deg, #ea580c, #c2410c); }
+.banner-siaga .banner-mitigation-action { color: #fed7aa; }
+
+.banner-darurat {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.28) 0%, rgba(36, 10, 14, 0.96) 100%);
+    border: 1px solid rgba(220, 38, 38, 0.65);
+    color: #f87171;
+    animation: dangerAlertPulse 2s infinite ease-in-out;
+}
+.banner-darurat .banner-icon-box { background: linear-gradient(135deg, #dc2626, #991b1b); }
+.banner-darurat .banner-mitigation-action { color: #fecaca; }
+
+@keyframes dangerAlertPulse {
+    0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 0 0 rgba(220,38,38,0); }
+    50% { box-shadow: 0 12px 36px rgba(0,0,0,0.7), 0 0 25px rgba(220,38,38,0.3); }
+}
+
+/* ============================================================
+   KARTU PANDUAN CEPAT MITIGASI: SOP 20:20:20 & JALUR AMAN
+   ============================================================ */
+.mitigation-quick-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.sop-card {
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    background: rgba(14, 25, 44, 0.75);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: var(--transition);
+}
+
+.sop-card:hover {
+    background: rgba(18, 32, 56, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sop-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.sop-content h3 {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.25;
+}
+
+.sop-content p {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.4;
+}
+
+/* ============================================================
+   TELEMETRY SENSOR GRID
+   Tampilan peralatan pemantau sungguhan (Bukan sci-fi game)
+   ============================================================ */
+.sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.sensor-card {
+    padding: 20px;
+    border-radius: var(--radius-md);
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.sensor-card:hover {
+    transform: translateY(-3px);
+    background: var(--bg-card-hover);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+}
+
+.sensor-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.sensor-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.sensor-hardware-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.sensor-label {
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.sensor-function {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+}
+
+.sensor-metric {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.sensor-metric .unit {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.sensor-subtext {
+    margin-top: 10px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sensor-subtext i { font-size: 0.7rem; }
+
+.status-indicator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    margin-top: 6px;
+    transition: var(--transition);
+}
+
+.badge-normal-state {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+
+.badge-alert-state {
+    background: rgba(220, 38, 38, 0.2);
+    border: 1px solid rgba(220, 38, 38, 0.55);
+    color: #f87171;
+    animation: dangerPill 1.2s infinite ease-in-out;
+}
+
+@keyframes dangerPill {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+}
+
+/* ============================================================
+   STATUS TELEMETRI STASIUN (BAR SISTEM)
+   ============================================================ */
+.station-telemetry-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border-radius: var(--radius-md);
+    background: rgba(12, 22, 38, 0.75);
+    border: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.telemetry-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.telemetry-item strong {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* ============================================================
+   CHART SECTION: TAMPILAN GRAFIK SENSOR REAL-TIME
+   ============================================================ */
+.chart-container {
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.section-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-title-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(2, 132, 199, 0.18);
+    border: 1px solid rgba(2, 132, 199, 0.35);
+    color: var(--ocean-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.section-title-wrap h2 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.section-title-wrap small {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.update-badge-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.update-badge-pill i { color: var(--ocean-light); }
+
+.chart-wrapper {
+    position: relative;
+    height: 310px;
+    width: 100%;
+}
+
+/* ============================================================
+   BOTTOM SECTION: ANALISIS MITIGASI & LOG PERINGATAN
+   ============================================================ */
+.bottom-two-col {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+    .bottom-two-col { grid-template-columns: 1fr; }
+}
+
+.panel-mitigation {
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-recommendation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.ai-rec-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 15px 16px;
+    border-radius: var(--radius-md);
+    background: rgba(14, 25, 44, 0.85);
+    border-left: 4px solid;
+    border-top: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: var(--transition);
+}
+
+.ai-rec-card:hover { transform: translateX(3px); }
+
+.ai-rec-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.ai-rec-body { flex: 1; min-width: 0; }
+.ai-rec-body strong {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #ffffff;
+    display: block;
+    margin-bottom: 3px;
+}
+.ai-rec-body p {
+    font-size: 0.79rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.ai-rec-card.normal { border-left-color: #10b981; }
+.ai-rec-card.normal .ai-rec-icon { background: linear-gradient(135deg, #10b981, #059669); }
+.ai-rec-card.normal strong { color: #34d399; }
+
+.ai-rec-card.waspada { border-left-color: #f59e0b; }
+.ai-rec-card.waspada .ai-rec-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.ai-rec-card.waspada strong { color: #fbbf24; }
+
+.ai-rec-card.siaga { border-left-color: #ea580c; }
+.ai-rec-card.siaga .ai-rec-icon { background: linear-gradient(135deg, #ea580c, #c2410c); }
+.ai-rec-card.siaga strong { color: #fb923c; }
+
+.ai-rec-card.darurat { border-left-color: #dc2626; }
+.ai-rec-card.darurat .ai-rec-icon { background: linear-gradient(135deg, #dc2626, #991b1b); }
+.ai-rec-card.darurat strong { color: #f87171; }
+
+/* Alert Log Stream */
+.log-stream-box {
+    max-height: 360px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+    flex: 1;
+}
+
+.log-stream-box::-webkit-scrollbar { width: 5px; }
+.log-stream-box::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+
+.log-item-entry {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(14, 25, 44, 0.7);
+    border-left: 3px solid;
+    border-top: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.log-item-entry:hover { background: rgba(20, 36, 62, 0.85); }
+
+.log-item-title {
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+
+.log-item-desc {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+.log-item-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.log-item-entry.WASPADA { border-left-color: #f59e0b; }
+.log-item-entry.SIAGA { border-left-color: #ea580c; }
+.log-item-entry.PERINGATAN, .log-item-entry.DARURAT { border-left-color: #dc2626; }
+
+.empty-log-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-size: 0.84rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex: 1;
+}
+.empty-log-state i { font-size: 1.8rem; color: var(--ocean-light); opacity: 0.4; }
+
+/* ============================================================
+   KARTU PROFIL RISIKO PESISIR & TITIK KUMPUL DESA KUNJIR
+   Memberikan rasa lokal & nyata untuk mitigasi Desa Kunjir
+   ============================================================ */
+.evacuation-zone-card {
+    padding: 22px 26px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    background: rgba(14, 25, 44, 0.88);
+    border: 1px solid var(--border);
+}
+
+.zone-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.zone-item {
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+}
+
+.zone-tag {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.zone-item h4 {
+    font-size: 0.84rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.zone-item p {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+
+/* ============================================================
+   FOOTER: KONTAK DARURAT & HAK CIPTA
+   ============================================================ */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 28px;
+    border-radius: var(--radius-lg);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.footer-hotline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.hotline-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.hotline-pill i { color: #f59e0b; }
+.hotline-pill strong { color: #ffffff; }
+
+.footer-info {
+    text-align: right;
+    line-height: 1.4;
+}
+
+.footer-info .village-name {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.footer-info .sub-district {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+}
+
+.footer-info .copyright {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+/* ============================================================
+   MODAL LOGIN GOOGLE & AKSES SISTEM
+   Desain resmi portal mitigasi kebencanaan
+   ============================================================ */
+#loginScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(5, 10, 20, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: opacity 0.4s var(--transition), visibility 0.4s;
+}
+
+#loginScreen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.login-card {
+    position: relative;
+    max-width: 460px;
+    width: 100%;
+    background: #0d1728;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-lg);
+    padding: 34px 28px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+    text-align: center;
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0284c7, #10b981);
+}
+
+.login-brand-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 14px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0284c7, #0f766e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.4);
+}
+
+.login-card h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.login-card h2 span { color: var(--ocean-light); }
+
+.login-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    margin-top: 6px;
+    background: var(--ocean-soft);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--ocean-light);
+}
+
+.login-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 12px 0 20px;
+    line-height: 1.55;
+}
+
+.google-signin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 20px;
+    background: #ffffff;
+    border: 1px solid #ffffff;
+    border-radius: var(--radius-full);
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    transition: var(--transition);
+}
+
+.google-signin-btn:hover {
+    background: #f1f5f9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.google-icon-svg { width: 19px; height: 19px; flex-shrink: 0; }
+
+.demo-account-section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+    text-align: left;
+}
+
+.demo-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.demo-pills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.demo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 11px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.demo-item:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(3px);
+}
+
+.demo-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.demo-meta { flex: 1; min-width: 0; }
+.demo-name { font-size: 0.78rem; font-weight: 700; color: #ffffff; line-height: 1.2; }
+.demo-role { font-size: 0.68rem; color: var(--text-muted); }
+
+.login-alt-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.btn-alt-opt {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-alt-opt:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+/* Custom form */
+#customAccountBox {
+    display: none;
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: var(--radius-md);
+    background: rgba(9, 16, 28, 0.95);
+    border: 1px solid var(--border);
+    text-align: left;
+}
+
+.form-group { margin-bottom: 9px; }
+.form-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 7px 11px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--ocean-light);
+}
+
+/* Tombol & Elemen Form Login Email & Sandi */
+.btn-login-main {
+    width: 100%;
+    padding: 11px 18px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-full);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+.btn-login-main:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(2, 132, 199, 0.55);
+}
+
+.pwd-toggle-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+.pwd-toggle-btn:hover {
+    color: var(--text-primary);
+}
+
+.auto-fill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: var(--radius-full);
+    padding: 2px 8px;
+}
+
+.login-tab-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.login-tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.04);
+}
+.login-tab-btn.active {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.login-alert-box {
+    display: none;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    font-size: 0.76rem;
+    line-height: 1.45;
+    text-align: left;
+    animation: fadeInAlert 0.3s ease;
+}
+@keyframes fadeInAlert {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes loginShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-7px); }
+    40%, 80% { transform: translateX(7px); }
+}
+
+/* ============================================================
+   MODAL SPREADSHEET (DATA AKUN PENGGUNA)
+   Tampilan spreadsheet modern, bersih, fungsional
+   ============================================================ */
+#spreadsheetModal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(5, 10, 20, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+#spreadsheetModal.open { display: flex; }
+
+.sheet-window {
+    max-width: 1150px;
+    width: 100%;
+    max-height: 90vh;
+    background: #0d1728;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sheet-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 22px;
+    background: rgba(16, 185, 129, 0.12);
+    border-bottom: 1px solid var(--border);
+}
+
+.sheet-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sheet-app-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.15rem;
+}
+
+.sheet-title-text h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.sheet-title-text small {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+}
+
+.btn-close-modal {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border);
+    color: #ffffff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.btn-close-modal:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.sheet-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 22px;
+    background: rgba(10, 18, 32, 0.8);
+    border-bottom: 1px solid var(--border-subtle);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.sheet-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    min-width: 240px;
+}
+.sheet-search-wrap i { color: var(--ocean-light); font-size: 0.78rem; }
+.sheet-search-wrap input {
+    background: none;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.78rem;
+    width: 100%;
+}
+.sheet-search-wrap input::placeholder { color: var(--text-dim); }
+
+.sheet-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-green-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 15px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    border-radius: var(--radius-full);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    transition: var(--transition);
+}
+
+.btn-green-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+}
+
+/* Tabel Spreadsheet */
+.sheet-scroll-container {
+    flex: 1;
+    overflow: auto;
+}
+
+.sheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.sheet-table thead tr th {
+    background: #091220;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid rgba(16, 185, 129, 0.4);
+    border-right: 1px solid var(--border-subtle);
+    white-space: nowrap;
+}
+
+.sheet-table tbody tr {
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background 0.15s;
+}
+
+.sheet-table tbody tr:hover {
+    background: rgba(2, 132, 199, 0.08);
+}
+
+.sheet-table td {
+    padding: 10px 14px;
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border-subtle);
+    white-space: nowrap;
+}
+
+.sheet-role-pill {
+    padding: 3px 9px;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.role-petugas { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+.role-relawan { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+.role-warga   { background: rgba(2, 132, 199, 0.15); color: #38bdf8; border: 1px solid rgba(2, 132, 199, 0.4); }
+.role-admin   { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+
+.sheet-statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 22px;
+    background: #091220;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.74rem;
+    color: var(--text-muted);
+}
+
+/* Toast Notif */
+.toast-box {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #0e1a2d;
+    border: 1px solid var(--ocean-light);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    font-size: 0.84rem;
+    font-weight: 700;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: var(--transition);
+    pointer-events: none;
+}
+.toast-box.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .app { padding: 14px; }
+    .header { padding: 14px; }
+    .brand-text h1 { font-size: 1.15rem; }
+    .banner-title { font-size: 1.3rem; }
+    .coords-badge { display: none; }
+}
+@media (max-width: 600px) {
+    .sensor-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sensor-card { padding: 14px; }
+    .sensor-metric { font-size: 1.6rem; }
+    .mitigation-quick-bar { grid-template-columns: 1fr; }
+    .footer { flex-direction: column; text-align: center; }
+    .footer-info { text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background Foto Pesisir Desa Kunjir & Vignette Natural -->
+<div class="bg-photo-wrapper">
+    <div class="bg-photo" id="bgPhotoElement"></div>
+    <div class="bg-gradient-overlay"></div>
+    <div class="bg-subtle-lines"></div>
+</div>
+
+<!-- ============================================================
+     LAYAR LOGIN AKSES SISTEM (EMAIL, KATA SANDI & OTOMATISASI)
+     ============================================================ -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="login-brand-icon">
+            <i class="fas fa-shield-halved"></i>
+        </div>
+        <h2>WAVE <span>KUNJIR</span></h2>
+        <div class="login-badge">
+            <i class="fas fa-tower-broadcast"></i> Stasiun Telemetri Kebencanaan Pesisir
+        </div>
+        <p class="login-desc">
+            Sistem Pemantauan Dini Tsunami &amp; Gempa Bumi Desa Kunjir, Kec. Rajabasa. Hanya akun posko yang telah terdaftar yang dapat mengakses sistem pemantauan.
+        </p>
+
+        <!-- TAB SWITCHER: MASUK AKUN VS BUAT AKUN BARU -->
+        <div style="display:flex;gap:6px;background:rgba(255,255,255,0.04);padding:4px;border-radius:var(--radius-md);margin-bottom:14px;border:1px solid var(--border-subtle);">
+            <button type="button" id="tabLoginBtn" class="login-tab-btn active" onclick="switchLoginTab('login')">
+                <i class="fas fa-right-to-bracket"></i> Masuk Akun
+            </button>
+            <button type="button" id="tabRegisterBtn" class="login-tab-btn" onclick="switchLoginTab('register')">
+                <i class="fas fa-user-plus"></i> Buat Akun Baru
+            </button>
+        </div>
+
+        <!-- ALERT BOX NOTIFIKASI ERROR / VALIDASI LOGIN (DITOLAK JIKA BELUM TERDAFTAR) -->
+        <div id="loginAlertBox" class="login-alert-box">
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+                <i class="fas fa-circle-xmark" style="font-size:1.1rem;color:#ef4444;margin-top:2px;flex-shrink:0;"></i>
+                <div>
+                    <strong id="loginAlertTitle" style="color:#ffffff;display:block;margin-bottom:2px;font-size:0.8rem;">Akses Masuk Ditolak</strong>
+                    <span id="loginAlertMsg">Email belum pernah terdaftar di sistem. Anda belum pernah membuat akun atau menggunakan email ini untuk login.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. FORM LOGIN EMAIL & KATA SANDI UTAMA -->
+        <form id="emailPasswordLoginForm" onsubmit="handleEmailPasswordLogin(event)" style="text-align:left;">
+            <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label">
+                    <i class="fas fa-envelope" style="color:var(--ocean-light);"></i> Alamat Email
+                </label>
+                <input type="email" id="loginEmail" class="form-control" placeholder="nama@email.com atau akun@gmail.com" required autocomplete="username" list="savedEmailsList" oninput="handleEmailInputAutoFill()" onchange="handleEmailInputAutoFill()">
+                <datalist id="savedEmailsList">
+                    <!-- Diisi otomatis oleh JavaScript dari akun tersimpan -->
+                </datalist>
+            </div>
+
+            <div class="form-group" style="margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                    <label class="form-label" style="margin:0;">
+                        <i class="fas fa-lock" style="color:var(--ocean-light);"></i> Kata Sandi
+                    </label>
+                    <span id="autoFilledBadge" class="auto-fill-badge" style="display:none;">
+                        <i class="fas fa-check-circle"></i> Sandi Terisi Otomatis
+                    </span>
+                </div>
+                <div style="position:relative;">
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan kata sandi posko" required autocomplete="current-password" style="padding-right:38px;">
+                    <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('loginPassword', 'pwdEyeIcon')" title="Lihat / Sembunyikan Sandi">
+                        <i class="fas fa-eye" id="pwdEyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Opsi Simpan Sandi Otomatis -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 14px;font-size:0.75rem;">
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;color:var(--text-secondary);font-weight:600;">
+                    <input type="checkbox" id="rememberMeCheck" checked style="accent-color:#0284c7;width:15px;height:15px;cursor:pointer;">
+                    <span>Simpan Akun &amp; Sandi Otomatis</span>
+                </label>
+                <a href="javascript:void(0)" onclick="switchLoginTab('register')" style="color:var(--ocean-light);text-decoration:none;font-weight:600;">Belum terdaftar? Buat akun</a>
+            </div>
+
+            <button type="submit" class="btn-login-main">
+                <i class="fas fa-arrow-right-to-bracket"></i>
+                <span>Masuk ke Dashboard</span>
+            </button>
+        </form>
+
+        <!-- 2. FORM PENDAFTARAN AKUN BARU (REGISTRASI KE DATABASE POSKO) -->
+        <form id="registerUserForm" onsubmit="handleUserRegistration(event)" style="display:none;text-align:left;">
+            <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label">
+                    <i class="fas fa-user" style="color:var(--ocean-light);"></i> Nama Lengkap
+                </label>
+                <input type="text" id="regNama" class="form-control" placeholder="Contoh: Muhammad Ihsan" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label">
+                    <i class="fas fa-envelope" style="color:var(--ocean-light);"></i> Alamat Email Posko / Google
+                </label>
+                <input type="email" id="regEmail" class="form-control" placeholder="Contoh: ihsan@gmail.com" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label">
+                    <i class="fas fa-lock" style="color:var(--ocean-light);"></i> Buat Kata Sandi Posko
+                </label>
+                <div style="position:relative;">
+                    <input type="password" id="regPassword" class="form-control" placeholder="Minimal 4 karakter" required minlength="4" style="padding-right:38px;">
+                    <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('regPassword', 'regPwdEyeIcon')" title="Lihat / Sembunyikan Sandi">
+                        <i class="fas fa-eye" id="regPwdEyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:10px;">
+                <label class="form-label">
+                    <i class="fas fa-id-badge" style="color:var(--ocean-light);"></i> Peran / Status di Posko
+                </label>
+                <select id="regRole" class="form-control" style="background:#091220;color:#ffffff;cursor:pointer;">
+                    <option value="Petugas Posko BMKG">Petugas Posko BMKG</option>
+                    <option value="Relawan Siaga Desa Kunjir">Relawan Siaga Desa Kunjir</option>
+                    <option value="Warga Desa Kunjir (RT 01)">Warga Desa Kunjir (RT 01)</option>
+                    <option value="Warga Desa Kunjir (RT 02)">Warga Desa Kunjir (RT 02)</option>
+                    <option value="Pengurus Desa / RT Kunjir">Pengurus Desa / RT Kunjir</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom:14px;">
+                <label class="form-label">
+                    <i class="fab fa-whatsapp" style="color:#10b981;"></i> Nomor WhatsApp Siaga
+                </label>
+                <input type="tel" id="regWa" class="form-control" placeholder="Contoh: 0812-3456-7890" required>
+            </div>
+
+            <button type="submit" class="btn-login-main" style="background:linear-gradient(135deg, #059669 0%, #047857 100%);box-shadow:0 4px 14px rgba(16, 185, 129, 0.4);">
+                <i class="fas fa-user-check"></i>
+                <span>Daftarkan Akun &amp; Masuk</span>
+            </button>
+        </form>
+
+        <!-- Divider Atau Masuk Cepat -->
+        <div id="savedAccountsHeader" style="display:flex;align-items:center;gap:10px;margin:18px 0 12px;color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">
+            <span style="flex:1;height:1px;background:var(--border-subtle);"></span>
+            <span><i class="fas fa-shield-halved" style="color:var(--ocean-light);"></i> Akun Posko Terdaftar (1-Click Auto-Fill)</span>
+            <span style="flex:1;height:1px;background:var(--border-subtle);"></span>
+        </div>
+
+        <!-- Akun Demo & Tersimpan (1-Click Auto-Fill) -->
+        <div class="demo-account-section" style="margin-top:0;padding-top:0;border-top:none;">
+            <div id="savedAccountsContainer" class="demo-pills-list">
+                <!-- Diisi otomatis oleh JavaScript -->
+            </div>
+        </div>
+
+        <!-- Opsi Alternatif: Google & Mode Tamu -->
+        <div class="login-alt-actions" style="margin-top:14px;">
+            <button class="btn-alt-opt" type="button" onclick="handleGoogleBtnClick()">
+                <i class="fab fa-google"></i> Masuk Akun Google
+            </button>
+            <button class="btn-alt-opt" type="button" onclick="handleGuestLogin()">
+                <i class="fas fa-eye"></i> Mode Tamu
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     MODAL SPREADSHEET (DATA AKUN PENGGUNA TERHUBUNG)
+     ============================================================ -->
+<div id="spreadsheetModal">
+    <div class="sheet-window">
+        <div class="sheet-topbar">
+            <div class="sheet-title-group">
+                <div class="sheet-app-icon">
+                    <i class="fas fa-table"></i>
+                </div>
+                <div class="sheet-title-text">
+                    <h3>Spreadsheet Data Akun Pengguna — WAVE KUNJIR</h3>
+                    <small><i class="fas fa-check-circle" style="color:#34d399;"></i> Manajemen Akun Petugas &amp; Warga Terdaftar</small>
+                </div>
+            </div>
+            <button class="btn-close-modal" onclick="closeSpreadsheet()" title="Tutup">&times;</button>
+        </div>
+
+        <!-- Webhook Settings (Tersembunyi by default) -->
+        <div id="webhookBox" style="display:none;padding:14px 22px;background:#091220;border-bottom:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <strong style="font-size:.82rem;color:#ffffff;"><i class="fab fa-google-drive" style="color:#10b981;"></i> Sinkronisasi Google Sheets Webhook (Apps Script)</strong>
+                <button onclick="toggleWebhookBox()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.78rem;">Tutup</button>
+            </div>
+            <p style="font-size:.74rem;color:var(--text-muted);margin-bottom:8px;">
+                Tempelkan URL Web App Apps Script Anda dari file <code style="color:var(--ocean-light);">google-sheet-script.js</code> untuk menyinkronkan data login secara live.
+            </p>
+            <div style="display:flex;gap:8px;">
+                <input type="url" id="webhookUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;">
+                <button type="button" class="btn-green-action" onclick="saveWebhookUrl()">Simpan Webhook</button>
+            </div>
+        </div>
+
+        <div class="sheet-toolbar">
+            <div class="sheet-search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="sheetSearchInput" placeholder="Cari nama, email, atau peran..." oninput="filterSheetTable()">
+            </div>
+            <div class="sheet-controls-right">
+                <select id="sheetRoleFilter" class="form-control" style="width:auto;padding:6px 10px;font-size:.76rem;" onchange="filterSheetTable()">
+                    <option value="">Semua Peran</option>
+                    <option value="Petugas">Petugas Posko</option>
+                    <option value="Relawan">Relawan</option>
+                    <option value="Warga">Warga</option>
+                    <option value="Admin">Admin</option>
+                </select>
+                <button class="btn-action-nav" onclick="toggleWebhookBox()" title="Pengaturan Webhook Google Sheets">
+                    <i class="fas fa-link" style="color:var(--ocean-light);"></i> Webhook Cloud
+                </button>
+                <button class="btn-green-action" onclick="downloadSheetCSV()">
+                    <i class="fas fa-file-csv"></i> Unduh Spreadsheet (.csv)
+                </button>
+            </div>
+        </div>
+
+        <div class="sheet-scroll-container">
+            <table class="sheet-table">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">No</th>
+                        <th>ID Pengguna</th>
+                        <th>Nama Lengkap</th>
+                        <th>Email Google</th>
+                        <th>Peran / Jabatan</th>
+                        <th>No. WhatsApp</th>
+                        <th>Waktu Registrasi</th>
+                        <th>Status</th>
+                        <th style="text-align:center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="sheetTableBody">
+                    <!-- Diisi dinamis oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sheet-statusbar">
+            <div>
+                <strong id="sheetStatsTotal" style="color:#ffffff;">4</strong> akun pengguna tercatat dalam sistem posko
+            </div>
+            <div style="display:flex;gap:14px;">
+                <span><i class="fas fa-circle-check" style="color:#34d399;"></i> Data Tersimpan Lokal</span>
+                <span>Standar: Google Sheets &amp; UTF-8</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toastNotif" class="toast-box">
+    <i class="fas fa-circle-check" style="color:#34d399;"></i>
+    <span id="toastText">Berhasil!</span>
+</div>
+
+<!-- ============================================================
+     APLIKASI UTAMA (DASHBOARD PEMANTAUAN PESISIR)
+     ============================================================ -->
+<div class="app">
+
+    <!-- Header Section -->
+    <header class="header-wrapper">
+        <!-- Topbar Lokasi & Koordinat Geografis -->
+        <div class="header-topbar">
+            <div class="gov-badge">
+                <i class="fas fa-building-shield"></i>
+                BPBD Lampung Selatan · Stasiun Posko Desa Kunjir
+            </div>
+            <div class="coords-badge">
+                <i class="fas fa-location-dot" style="color:#f59e0b;"></i>
+                Koordinat Sensor: <span>05°50'12.4"S 105°36'48.2"E</span> · Elevasi: <span>4 MDPL (Pantai)</span>
+            </div>
+        </div>
+
+        <!-- Main Header -->
+        <div class="header card-panel">
+            <div class="header-left">
+                <div class="brand-icon">
+                    <i class="fas fa-water"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>
+                        WAVE KUNJIR
+                        <span class="brand-tag"><i class="fas fa-wifi"></i> InaTEWS IoT</span>
+                    </h1>
+                    <div class="brand-sub">
+                        <i class="fas fa-map-pin"></i>
+                        Kawasan Rawan Bencana Selat Sunda · Kec. Rajabasa, Kab. Lampung Selatan
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <!-- Tombol Ganti Foto Latar (AI vs Drone Asli) -->
+                <button id="toggleBgBtn" class="btn-action-nav" title="Ganti Latar Foto Desa Kunjir">
+                    <i class="fas fa-camera"></i>
+                    <span id="bgBtnText">Foto Drone Asli</span>
+                </button>
+
+                <!-- Profile Akun Sedang Login -->
+                <div id="headerUserPill" class="header-user-badge">
+                    <div id="headerUserAvatar" class="user-avatar-mini">BH</div>
+                    <div class="user-info-mini">
+                        <div id="headerUserName" class="user-name-mini">Budi Hartono</div>
+                        <div id="headerUserRole" class="user-role-mini">Petugas BMKG</div>
+                    </div>
+                    <button class="btn-logout-mini" onclick="handleLogout()" title="Keluar">
+                        <i class="fas fa-arrow-right-from-bracket"></i>
+                    </button>
+                </div>
+
+                <!-- Status Live & Jam Real-Time -->
+                <div class="status-pill-live">
+                    <span class="pulse-dot-natural"></span>
+                    <span>ONLINE</span>
+                </div>
+                <div class="clock-box">
+                    <i class="fas fa-clock"></i>
+                    <span id="clockText">--:--:--</span>
+                    <span style="font-size:.65rem;color:var(--text-dim);">WIB</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================================
+         PANEL KENDALI SIMULASI MITIGASI (UNTUK DEMO PRESENTASI LOMBA)
+         ============================================================ -->
+    <div class="sim-control-bar">
+        <div class="sim-label">
+            <i class="fas fa-sliders"></i>
+            <span>Simulasi Uji Mitigasi &amp; Peringatan (Demo Posko)</span>
+        </div>
+        <div class="sim-buttons-group">
+            <button class="btn-sim sim-normal active" onclick="setSimulationScenario('normal')">
+                <i class="fas fa-circle-check"></i> 1. Normal (Aman)
+            </button>
+            <button class="btn-sim sim-waspada" onclick="setSimulationScenario('badai')">
+                <i class="fas fa-wind"></i> 2. Waspada (Pasang Badai)
+            </button>
+            <button class="btn-sim sim-siaga" onclick="setSimulationScenario('gempa')">
+                <i class="fas fa-house-crack"></i> 3. Siaga (Gempa Tektonik)
+            </button>
+            <button class="btn-sim sim-darurat" onclick="setSimulationScenario('tsunami')">
+                <i class="fas fa-triangle-exclamation"></i> 4. Awas (Potensi Tsunami)
+            </button>
+            <button id="sirenBtn" class="siren-toggle-btn" onclick="toggleEmergencySiren()">
+                <i class="fas fa-volume-high"></i> <span id="sirenBtnText">Uji Sirine Posko</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         BANNER PERINGATAN RESMI STATUS BENCANA PESISIR
+         ============================================================ -->
+    <div id="alertBanner" class="alert-banner banner-normal">
+        <div class="banner-icon-box">
+            <i class="fas fa-circle-check" id="bannerIcon"></i>
+        </div>
+        <div class="banner-details">
+            <div class="banner-status-tag" id="bannerTag">
+                <i class="fas fa-shield"></i> STATUS KONDISI: NORMAL
+            </div>
+            <div class="banner-title" id="bannerTitle">Semua Aman — Pantai Terkendali</div>
+            <div class="banner-sub" id="bannerSub">Seluruh sensor pasang surut, seismik, dan barometer berada dalam parameter normal. Warga dapat beraktivitas seperti biasa.</div>
+            <div class="banner-mitigation-action" id="bannerAction">
+                <i class="fas fa-circle-info"></i> Petunjuk: Tetap pantau siaran radio posko dan informasi berkala BMKG.
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         PANDUAN CEPAT MITIGASI: ATURAN EMAS 20:20:20 & JALUR EVAKUASI
+         ============================================================ -->
+    <div class="mitigation-quick-bar">
+        <div class="sop-card">
+            <div class="sop-icon" style="background:#0284c7;">
+                <i class="fas fa-stopwatch"></i>
+            </div>
+            <div class="sop-content">
+                <h3>Aturan Emas Tsunami 20:20:20</h3>
+                <p>Gempa terasa <strong>20 detik</strong>, Anda punya waktu <strong>20 menit</strong> untuk lari ke ketinggian <strong>20 meter</strong>.</p>
+            </div>
+        </div>
+
+        <div class="sop-card">
+            <div class="sop-icon" style="background:#059669;">
+                <i class="fas fa-mountain"></i>
+            </div>
+            <div class="sop-content">
+                <h3>Titik Kumpul Utama (TES)</h3>
+                <p><strong>Bukit Kunjir / Lapangan Atas Desa</strong> (Elevasi 32 MDPL). Jarak aman 450 meter dari garis pantai.</p>
+            </div>
+        </div>
+
+        <div class="sop-card">
+            <div class="sop-icon" style="background:#d97706;">
+                <i class="fas fa-radio"></i>
+            </div>
+            <div class="sop-content">
+                <h3>Radio Komunikasi Posko</h3>
+                <p>Kanal Darurat VHF <strong>149.050 MHz</strong> / Call Center BPBD Lampung Selatan <strong>112</strong>.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         GRID SENSOR TELEMETRI REAL-TIME
+         ============================================================ -->
+    <section class="sensor-grid">
+
+        <!-- Sensor Ketinggian Air Laut (Ultrasonik JSN-SR04T) -->
+        <div class="sensor-card">
+            <div class="sensor-card-top">
+                <div class="sensor-icon-box" style="background:linear-gradient(135deg, #0284c7, #0369a1);">
+                    <i class="fas fa-water"></i>
+                </div>
+                <span class="sensor-hardware-tag">JSN-SR04T</span>
+            </div>
+            <div class="sensor-label">Ketinggian Air Laut</div>
+            <div class="sensor-function">Tide Gauge Ultrasonik Pesisir</div>
+            <div class="sensor-metric">
+                <span id="waterLevel">200.0</span>
+                <span class="unit">cm</span>
+            </div>
+            <div class="sensor-subtext">
+                <i class="fas fa-gauge"></i> Batas pasang normal: 180 - 220 cm
+            </div>
+        </div>
+
+        <!-- Sensor Suhu Udara (BME280) -->
+        <div class="sensor-card">
+            <div class="sensor-card-top">
+                <div class="sensor-icon-box" style="background:linear-gradient(135deg, #f97316, #ea580c);">
+                    <i class="fas fa-temperature-half"></i>
+                </div>
+                <span class="sensor-hardware-tag">BME280</span>
+            </div>
+            <div class="sensor-label">Suhu Pesisir</div>
+            <div class="sensor-function">Termometer Presisi Atmosfer</div>
+            <div class="sensor-metric">
+                <span id="temperature">29.1</span>
+                <span class="unit">°C</span>
+            </div>
+            <div class="sensor-subtext">
+                <i class="fas fa-sun"></i> Suhu permukaan pantai normal
+            </div>
+        </div>
+
+        <!-- Sensor Kelembapan (BME280) -->
+        <div class="sensor-card">
+            <div class="sensor-card-top">
+                <div class="sensor-icon-box" style="background:linear-gradient(135deg, #06b6d4, #0891b2);">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <span class="sensor-hardware-tag">BME280</span>
+            </div>
+            <div class="sensor-label">Kelembapan Udara</div>
+            <div class="sensor-function">Higrometer Digital</div>
+            <div class="sensor-metric">
+                <span id="humidity">76.0</span>
+                <span class="unit">%</span>
+            </div>
+            <div class="sensor-subtext">
+                <i class="fas fa-cloud"></i> Parameter kelembapan maritim
+            </div>
+        </div>
+
+        <!-- Sensor Tekanan Barometrik (BME280) -->
+        <div class="sensor-card">
+            <div class="sensor-card-top">
+                <div class="sensor-icon-box" style="background:linear-gradient(135deg, #10b981, #059669);">
+                    <i class="fas fa-compass"></i>
+                </div>
+                <span class="sensor-hardware-tag">BME280</span>
+            </div>
+            <div class="sensor-label">Tekanan Barometer</div>
+            <div class="sensor-function">Deteksi Depresi Cuaca / Badai</div>
+            <div class="sensor-metric">
+                <span id="pressure">1011.2</span>
+                <span class="unit">hPa</span>
+            </div>
+            <div class="sensor-subtext">
+                <i class="fas fa-arrow-trend-up"></i> Penurunan drastis (&gt;5 hPa) indikasi badai
+            </div>
+        </div>
+
+        <!-- Sensor Kecepatan Angin (Anemometer) -->
+        <div class="sensor-card">
+            <div class="sensor-card-top">
+                <div class="sensor-icon-box" style="background:linear-gradient(135deg, #f59e0b, #d97706);">
+                    <i class="fas fa-wind"></i>
+                </div>
+                <span class="sensor-hardware-tag">Anemometer</span>
+            </div>
+            <div class="sensor-label">Kecepatan Angin</div>
+            <div class="sensor-function">Pengukur Angin Permukaan</div>
+            <div class="sensor-metric">
+                <span id="windSpeed">12.5</span>
+                <span class="unit">km/j</span>
+            </div>
+            <div class="sensor-subtext">
+                <i class="fas fa-flag"></i> Skala Beaufort: Angin Sepoi Sedang
+            </div>
+        </div>
+
+        <!-- Sensor Getaran Seismik (SW-420) -->
+        <div class="sensor-card">
+            <div class="sensor-card-top">
+                <div class="sensor-icon-box" style="background:linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                    <i class="fas fa-wave-square"></i>
+                </div>
+                <span class="sensor-hardware-tag">SW-420</span>
+            </div>
+            <div class="sensor-label">Getaran Permukaan</div>
+            <div class="sensor-function">Sensor Getar Seismik Lokal</div>
+            <div style="margin-top:6px;">
+                <div id="vibration" class="status-indicator-badge badge-normal-state">
+                    <i class="fas fa-circle-check"></i> Kondisi Stabil
+                </div>
+            </div>
+            <div class="sensor-subtext" style="margin-top:14px;">
+                <i class="fas fa-bullseye"></i> Siaga getaran gempa tektonik/vulkanik
+            </div>
+        </div>
+
+        <!-- Sensor Akselerometer Tanah (MPU6050 - PGA) -->
+        <div class="sensor-card">
+            <div class="sensor-card-top">
+                <div class="sensor-icon-box" style="background:linear-gradient(135deg, #ef4444, #dc2626);">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span class="sensor-hardware-tag">MPU6050</span>
+            </div>
+            <div class="sensor-label">Kekuatan Gempa (PGA)</div>
+            <div class="sensor-function">Peak Ground Acceleration 3-Axis</div>
+            <div class="sensor-metric">
+                <span id="pga">0.003</span>
+                <span class="unit">g</span>
+            </div>
+            <div class="sensor-subtext">
+                <i class="fas fa-triangle-exclamation"></i> Batas guncangan gempa: &gt; 0.050g
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Telemetri Stasiun Status Bar -->
+    <div class="station-telemetry-bar">
+        <div class="telemetry-item">
+            <i class="fas fa-signal" style="color:#34d399;"></i>
+            <span>Sinyal LoRaWAN / 4G: <strong>-68 dBm (Sangat Baik)</strong></span>
+        </div>
+        <div class="telemetry-item">
+            <i class="fas fa-solar-panel" style="color:#f59e0b;"></i>
+            <span>Daya Baterai Panel Surya: <strong>98.4% (Terkisi)</strong></span>
+        </div>
+        <div class="telemetry-item">
+            <i class="fas fa-database" style="color:var(--ocean-light);"></i>
+            <span>Data Terkirim: <strong id="statData">0</strong> paket</span>
+        </div>
+        <div class="telemetry-item">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>Interval Telemetri: <strong>3 Detik</strong></span>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         GRAFIK DATA HISTORIS TELEMETRI (CHART.JS)
+         ============================================================ -->
+    <section class="chart-container card-panel">
+        <div class="section-head">
+            <div class="section-title-wrap">
+                <div class="section-title-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <h2>Grafik Telemetri Sensor Real-Time</h2>
+                    <small>Perekaman 50 titik data terakhir secara kontinu dari stasiun tepi pantai</small>
+                </div>
+            </div>
+            <div class="update-badge-pill">
+                <i class="fas fa-arrows-rotate"></i>
+                Pembaruan Terakhir: <span id="lastUpdate">--:--:--</span>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="sensorChart"></canvas>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         BAGIAN BAWAH: ANALISIS MITIGASI & RIWAYAT LOG
+         ============================================================ -->
+    <section class="bottom-two-col">
+
+        <!-- Panel Rekomendasi Mitigasi AI -->
+        <div class="panel-mitigation card-panel">
+            <div class="section-head" style="margin-bottom:14px;">
+                <div class="section-title-wrap">
+                    <div class="section-title-icon" style="background:rgba(16, 185, 129, 0.15);color:#34d399;border-color:rgba(16, 185, 129, 0.3);">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div>
+                        <h2>Analisis Mitigasi Cerdas</h2>
+                        <small>Kalkulasi risiko otomatis multi-sensor</small>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aiPanel" class="ai-recommendation-list">
+                <div class="ai-rec-card normal">
+                    <div class="ai-rec-icon"><i class="fas fa-circle-check"></i></div>
+                    <div class="ai-rec-body">
+                        <strong>Kondisi Pantai Normal &amp; Terkendali</strong>
+                        <p>Parameter tinggi air laut, hembusan angin, dan getaran seismik berada dalam batas aman. Nelayan dan warga Desa Kunjir dapat beraktivitas di pesisir dengan normal.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Riwayat Log Peringatan -->
+        <div class="panel-mitigation card-panel">
+            <div class="section-head" style="margin-bottom:14px;">
+                <div class="section-title-wrap">
+                    <div class="section-title-icon" style="background:rgba(245, 158, 11, 0.15);color:#fbbf24;border-color:rgba(245, 158, 11, 0.3);">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div>
+                        <h2>Riwayat Peringatan Dini</h2>
+                        <small>Notifikasi kejadian terdeteksi hari ini</small>
+                    </div>
+                </div>
+                <span id="alertCount" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;color:var(--text-muted);">0 catatan</span>
+            </div>
+
+            <div id="alertHistory" class="log-stream-box">
+                <div class="empty-log-state">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Belum ada catatan bahaya atau anomali cuaca ekstrim hari ini.</span>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ============================================================
+         KARTU ZONASI BAHAYA & JALUR AMAN DESA KUNJIR
+         ============================================================ -->
+    <div class="evacuation-zone-card card-panel">
+        <div class="section-title-wrap">
+            <div class="section-title-icon" style="background:rgba(2, 132, 199, 0.15);color:var(--ocean-light);border-color:rgba(2, 132, 199, 0.3);">
+                <i class="fas fa-map-location-dot"></i>
+            </div>
+            <div>
+                <h2>Zonasi Evakuasi Pesisir Desa Kunjir</h2>
+                <small>Struktur evakuasi mandiri berbasis topografi wilayah Kecamatan Rajabasa</small>
+            </div>
+        </div>
+
+        <div class="zone-grid">
+            <div class="zone-item">
+                <span class="zone-tag" style="background:rgba(220, 38, 38, 0.2);color:#f87171;border:1px solid rgba(220, 38, 38, 0.4);">Zona Merah Bahaya</span>
+                <h4>Garis Pantai &amp; TPI (0 - 150m)</h4>
+                <p>Kawasan pelabuhan nelayan dan permukiman pinggir pantai. Wajib segera dikosongkan jika sirine atau peringatan Awas Tsunami aktif.</p>
+            </div>
+
+            <div class="zone-item">
+                <span class="zone-tag" style="background:rgba(245, 158, 11, 0.2);color:#fbbf24;border:1px solid rgba(245, 158, 11, 0.4);">Zona Transisi Waspada</span>
+                <h4>Jalan Raya Pesisir Rajabasa</h4>
+                <p>Jalur arteri penghubung Kalianda - Rajabasa. Diprioritaskan sebagai akses cepat penyeberangan warga ke arah perbukitan.</p>
+            </div>
+
+            <div class="zone-item">
+                <span class="zone-tag" style="background:rgba(16, 185, 129, 0.2);color:#34d399;border:1px solid rgba(16, 185, 129, 0.4);">Zona Hijau Aman</span>
+                <h4>Bukit Kunjir / Lapangan Atas</h4>
+                <p>Ketinggian &gt; 30 MDPL. Titik evakuasi akhir (TES) dengan persediaan logistik darurat, genset, dan tenda posko darurat bencana.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         FOOTER: KONTAK DARURAT & KOORDINAT
+         ============================================================ -->
+    <footer class="footer card-panel">
+        <div class="footer-hotline">
+            <div class="hotline-pill">
+                <i class="fas fa-phone-volume"></i>
+                <span>Call Center BPBD: <strong>112 / (0727) 321113</strong></span>
+            </div>
+            <div class="hotline-pill">
+                <i class="fas fa-life-ring"></i>
+                <span>Basarnas Bakauheni: <strong>115</strong></span>
+            </div>
+            <div class="hotline-pill">
+                <i class="fas fa-tower-cell"></i>
+                <span>Posko Desa Kunjir: <strong>0812-7788-9901</strong></span>
+            </div>
+        </div>
+
+        <div class="footer-info">
+            <div class="village-name">Posko Siaga Bencana Desa Kunjir</div>
+            <div class="sub-district">Kecamatan Rajabasa · Kabupaten Lampung Selatan</div>
+            <div class="copyright">© 2025 WAVE KUNJIR — Sistem Pemantauan Pesisir &amp; Tsunami Real-Time</div>
+        </div>
+    </footer>
+
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT: LOGIKA TELEMETRI, SENSOR, SIMULASI & SPREADSHEET
+     ============================================================ -->
+<script>
+/* ============================================================
+   KONFIGURASI SISTEM & AMBANG BATAS BAHAYA
+   ============================================================ */
+const CFG = {
+    ANGIN_WASPADA:    39.6,  // km/jam
+    ANGIN_PERINGATAN: 86.4,  // km/jam
+    PGA_THRESHOLD:    0.050, // g-force gempa terasa
+    TEKANAN_DROP:     5.0,   // hPa
+    ANOMALI_AIR:      15.0,  // cm lonjakan pasang surut
+    INTERVAL:         3000,  // ms
+    MAX_CHART:        50
+};
+
+/* State Simulasi (Default: Dinamis) */
+let forcedScenario = null; // 'normal', 'badai', 'gempa', 'tsunami'
+let chart = null;
+let alertHistory = [];
+let lastWaterLevel = null;
+let lastPressure   = null;
+let lastAlertTime  = {};
+let totalData      = 0;
+let totalAlerts    = 0;
+
+/* ============================================================
+   AUDIO SIRINE WEB AUDIO API (SYNTHESIZED - TANPA PERLU FILE MP3)
+   ============================================================ */
+let audioCtx = null;
+let sirenOscillator = null;
+let sirenGain = null;
+let isSirenActive = false;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function startSirenSound() {
+    try {
+        initAudio();
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        if (isSirenActive) return;
+
+        sirenOscillator = audioCtx.createOscillator();
+        sirenGain = audioCtx.createGain();
+
+        sirenOscillator.type = 'sawtooth';
+        sirenGain.gain.setValueAtTime(0.08, audioCtx.currentTime); // volume nyaman
+
+        // Modulasi frekuensi dua nada sirine darurat (550Hz - 900Hz)
+        const now = audioCtx.currentTime;
+        sirenOscillator.frequency.setValueAtTime(600, now);
+        
+        let freqTimer = setInterval(() => {
+            if (!isSirenActive) {
+                clearInterval(freqTimer);
+                return;
+            }
+            const t = audioCtx.currentTime;
+            sirenOscillator.frequency.linearRampToValueAtTime(950, t + 0.5);
+            sirenOscillator.frequency.linearRampToValueAtTime(600, t + 1.0);
+        }, 1000);
+
+        sirenOscillator.connect(sirenGain);
+        sirenGain.connect(audioCtx.destination);
+        sirenOscillator.start();
+        isSirenActive = true;
+
+        const sirenBtn = document.getElementById('sirenBtn');
+        const sirenText = document.getElementById('sirenBtnText');
+        if (sirenBtn) sirenBtn.classList.add('playing');
+        if (sirenText) sirenText.textContent = 'Matikan Sirine';
+    } catch(e) {
+        console.warn("Audio Context Warning:", e);
+    }
+}
+
+function stopSirenSound() {
+    if (sirenOscillator && isSirenActive) {
+        try {
+            sirenOscillator.stop();
+            sirenOscillator.disconnect();
+        } catch(e){}
+    }
+    isSirenActive = false;
+    const sirenBtn = document.getElementById('sirenBtn');
+    const sirenText = document.getElementById('sirenBtnText');
+    if (sirenBtn) sirenBtn.classList.remove('playing');
+    if (sirenText) sirenText.textContent = 'Uji Sirine Posko';
+}
+
+function toggleEmergencySiren() {
+    if (isSirenActive) {
+        stopSirenSound();
+        showToast("Sirine darurat dimatikan.", 'fa-volume-xmark', 'var(--text-secondary)');
+    } else {
+        startSirenSound();
+        showToast("Sirine Posko Bencana Aktif!", 'fa-volume-high', '#f87171');
+    }
+}
+
+/* ============================================================
+   JAM REAL-TIME WIB
+   ============================================================ */
+function updateClock() {
+    const n = new Date();
+    const hh = String(n.getHours()).padStart(2, '0');
+    const mm = String(n.getMinutes()).padStart(2, '0');
+    const ss = String(n.getSeconds()).padStart(2, '0');
+    const el = document.getElementById('clockText');
+    if (el) el.textContent = `${hh}:${mm}:${ss}`;
+}
+
+/* ============================================================
+   SIMULASI SENSOR TELEMETRI
+   ============================================================ */
+function generateSensor() {
+    let sc = 'normal';
+    if (forcedScenario) {
+        sc = forcedScenario;
+    } else {
+        const r = Math.random() * 100;
+        sc = r < 86 ? 'normal' : r < 93 ? 'badai' : r < 98 ? 'gempa' : 'tsunami';
+    }
+
+    const map = {
+        normal: {
+            water_level_cm: 200 + (Math.random() - 0.5) * 5,
+            temperature_c: 29 + (Math.random() - 0.5) * 1.5,
+            humidity_pct: 76 + (Math.random() - 0.5) * 5,
+            pressure_hpa: 1011 + (Math.random() - 0.5) * 2,
+            wind_speed_kmh: 10 + Math.random() * 12,
+            pga_g: 0.002 + Math.random() * 0.008,
+            vibration_detected: false
+        },
+        badai: {
+            water_level_cm: 218 + (Math.random() - 0.5) * 8,
+            temperature_c: 26.5 + (Math.random() - 0.5) * 2,
+            humidity_pct: 91 + (Math.random() - 0.5) * 5,
+            pressure_hpa: 994 + (Math.random() - 0.5) * 4, // tekanan anjlok
+            wind_speed_kmh: 52 + Math.random() * 35, // angin kencang
+            pga_g: 0.005 + Math.random() * 0.01,
+            vibration_detected: false
+        },
+        gempa: {
+            water_level_cm: 202 + (Math.random() - 0.5) * 4,
+            temperature_c: 28.5 + (Math.random() - 0.5) * 1,
+            humidity_pct: 78 + (Math.random() - 0.5) * 4,
+            pressure_hpa: 1010 + (Math.random() - 0.5) * 2,
+            wind_speed_kmh: 8 + Math.random() * 10,
+            pga_g: 0.065 + Math.random() * 0.12, // guncangan gempa nyata
+            vibration_detected: true
+        },
+        tsunami: {
+            water_level_cm: 235 + (Math.random() - 0.5) * 18, // anomali air laut
+            temperature_c: 28.5 + (Math.random() - 0.5) * 1,
+            humidity_pct: 82 + (Math.random() - 0.5) * 4,
+            pressure_hpa: 1009 + (Math.random() - 0.5) * 2,
+            wind_speed_kmh: 12 + Math.random() * 8,
+            pga_g: 0.08 + Math.random() * 0.16,
+            vibration_detected: true
+        }
+    };
+
+    const d = map[sc];
+    d.recorded_at = new Date().toISOString();
+    return d;
+}
+
+function setSimulationScenario(scenario) {
+    forcedScenario = scenario;
+    document.querySelectorAll('.btn-sim').forEach(btn => btn.classList.remove('active'));
+
+    const activeBtn = document.querySelector(`.sim-${scenario}`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    // Jika skenario tsunami, otomatis beri saran audio
+    if (scenario === 'tsunami') {
+        showToast("⚠️ Simulasi: Potensi Tsunami Terdeteksi!", 'fa-triangle-exclamation', '#f87171');
+    } else {
+        showToast(`Skenario beralih ke: ${scenario.toUpperCase()}`, 'fa-circle-check', 'var(--ocean-light)');
+    }
+
+    // Segera picu pembaruan sensor saat diklik
+    const data = generateSensor();
+    updateSensors(data);
+    updateChart(data);
+    const risiko = analisisAI(data);
+    updateBanner(risiko);
+    updateAI(risiko);
+    risiko.forEach(r => tambahAlert(r));
+}
+
+/* ============================================================
+   ANALISIS MITIGASI KEBENCANAAN
+   ============================================================ */
+function analisisAI(data) {
+    const risiko = [];
+    const anomaliAir = lastWaterLevel !== null ? Math.abs(data.water_level_cm - lastWaterLevel) : 0;
+    const turunTekanan = lastPressure !== null ? lastPressure - data.pressure_hpa : 0;
+
+    // Deteksi Badai & Angin Ekstrim
+    if (data.wind_speed_kmh >= CFG.ANGIN_PERINGATAN) {
+        risiko.push({
+            tipe: 'badai',
+            level: 'PERINGATAN',
+            alasan: `Kecepatan angin mencapai ${data.wind_speed_kmh.toFixed(1)} km/jam. Gelombang tinggi di Selat Sunda!`,
+            langkah: 'Hentikan aktivitas nelayan, amankan perahu ke tambatan tinggi.'
+        });
+    } else if (data.wind_speed_kmh >= CFG.ANGIN_WASPADA) {
+        risiko.push({
+            tipe: 'badai',
+            level: 'WASPADA',
+            alasan: `Kecepatan angin pesisir ${data.wind_speed_kmh.toFixed(1)} km/jam berada di atas ambang normal.`,
+            langkah: 'Perahu nelayan berukuran kecil diimbau tidak melaut ke tengah.'
+        });
+    }
+
+    // Deteksi Penurunan Drastis Barometer
+    if (turunTekanan >= CFG.TEKANAN_DROP) {
+        risiko.push({
+            tipe: 'badai',
+            level: 'WASPADA',
+            alasan: `Tekanan udara anjlok ${turunTekanan.toFixed(1)} hPa secara mendadak. Indikasi badai maritim.`,
+            langkah: 'Siagakan genset cadangan dan saluran komunikasi darurat posko.'
+        });
+    }
+
+    // Deteksi Gempa Tektonik
+    if (data.pga_g >= CFG.PGA_THRESHOLD) {
+        risiko.push({
+            tipe: 'gempa',
+            level: 'SIAGA',
+            alasan: `Akselerasi getaran tanah ${data.pga_g.toFixed(3)}g terdeteksi oleh sensor seismik MPU6050.`,
+            langkah: 'Jauhi bangunan retak, berlindung di tempat terbuka yang aman.'
+        });
+    }
+
+    // Deteksi Gabungan: Gempa + Anomali Air Laut -> TSUNAMI
+    const sG = data.pga_g >= CFG.PGA_THRESHOLD;
+    const sV = data.vibration_detected;
+    const sA = anomaliAir >= CFG.ANOMALI_AIR || data.water_level_cm > 230;
+
+    if (sG && sA) {
+        risiko.push({
+            tipe: 'tsunami',
+            level: 'DARURAT',
+            alasan: `Guncangan gempa disertai anomali lonjakan muka air laut (+${anomaliAir.toFixed(1)} cm)!`,
+            langkah: 'SEGERA EVAKUASI! Terapkan SOP 20:20:20, lari ke Bukit Kunjir sekarang juga!'
+        });
+    } else if ([sG, sV, sA].filter(Boolean).length >= 2) {
+        risiko.push({
+            tipe: 'tsunami',
+            level: 'SIAGA',
+            alasan: `Dua indikator tsunami aktif bersamaan (seismik & lonjakan pasang surut).`,
+            langkah: 'Masyarakat pesisir diimbau bersiap evakuasi menuju zona aman.'
+        });
+    }
+
+    lastWaterLevel = data.water_level_cm;
+    lastPressure   = data.pressure_hpa;
+    return risiko;
+}
+
+/* ============================================================
+   UPDATE TAMPILAN SENSOR & STATUS
+   ============================================================ */
+function updateSensors(data) {
+    document.getElementById('waterLevel').textContent  = data.water_level_cm.toFixed(1);
+    document.getElementById('temperature').textContent = data.temperature_c.toFixed(1);
+    document.getElementById('humidity').textContent    = data.humidity_pct.toFixed(1);
+    document.getElementById('pressure').textContent    = data.pressure_hpa.toFixed(1);
+    document.getElementById('windSpeed').textContent   = data.wind_speed_kmh.toFixed(1);
+    document.getElementById('pga').textContent         = data.pga_g.toFixed(3);
+
+    const vib = document.getElementById('vibration');
+    if (data.vibration_detected) {
+        vib.className = 'status-indicator-badge badge-alert-state';
+        vib.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Guncangan Terdeteksi!';
+    } else {
+        vib.className = 'status-indicator-badge badge-normal-state';
+        vib.innerHTML = '<i class="fas fa-circle-check"></i> Kondisi Stabil';
+    }
+
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
+    totalData++;
+    document.getElementById('statData').textContent = totalData;
+}
+
+function updateBanner(risikoList) {
+    const banner = document.getElementById('alertBanner');
+    const icon   = document.getElementById('bannerIcon');
+    const tag    = document.getElementById('bannerTag');
+    const title  = document.getElementById('bannerTitle');
+    const sub    = document.getElementById('bannerSub');
+    const action = document.getElementById('bannerAction');
+
+    if (risikoList.length === 0) {
+        banner.className = 'alert-banner banner-normal';
+        icon.className   = 'fas fa-circle-check';
+        tag.innerHTML    = '<i class="fas fa-shield"></i> STATUS KONDISI: NORMAL';
+        title.textContent = 'Semua Aman — Pantai Terkendali';
+        sub.textContent   = 'Seluruh sensor pasang surut, seismik, dan barometer berada dalam parameter normal. Warga dapat beraktivitas seperti biasa.';
+        action.innerHTML  = '<i class="fas fa-circle-info"></i> Petunjuk: Tetap pantau siaran radio posko dan informasi berkala BMKG.';
+        return;
+    }
+
+    const pri = { DARURAT: 4, PERINGATAN: 3, SIAGA: 2, WASPADA: 1 };
+    const top = risikoList.reduce((mx, r) => (pri[r.level] || 0) > (pri[mx.level] || 0) ? r : mx);
+
+    const configMap = {
+        WASPADA: {
+            cls: 'banner-waspada',
+            icon: 'fa-triangle-exclamation',
+            tagColor: '#fbbf24'
+        },
+        SIAGA: {
+            cls: 'banner-siaga',
+            icon: 'fa-house-crack',
+            tagColor: '#fb923c'
+        },
+        PERINGATAN: {
+            cls: 'banner-waspada',
+            icon: 'fa-wind',
+            tagColor: '#fbbf24'
+        },
+        DARURAT: {
+            cls: 'banner-darurat',
+            icon: 'fa-triangle-exclamation',
+            tagColor: '#f87171'
+        }
+    };
+
+    const cfg = configMap[top.level] || configMap.WASPADA;
+    banner.className = 'alert-banner ' + cfg.cls;
+    icon.className   = 'fas ' + cfg.icon;
+    tag.innerHTML    = `<i class="fas fa-triangle-exclamation"></i> TINGKAT PERINGATAN: ${top.level}`;
+    title.textContent = `${top.level} — POTENSI ${top.tipe.toUpperCase()}`;
+    sub.textContent   = top.alasan;
+    action.innerHTML  = `<i class="fas fa-person-running"></i> <strong>Langkah Warga:</strong> ${top.langkah || 'Tingkatkan kewaspadaan dan bersiap evakuasi.'}`;
+}
+
+function updateAI(risikoList) {
+    const panel = document.getElementById('aiPanel');
+    if (risikoList.length === 0) {
+        panel.innerHTML = `
+        <div class="ai-rec-card normal">
+            <div class="ai-rec-icon"><i class="fas fa-circle-check"></i></div>
+            <div class="ai-rec-body">
+                <strong>Kondisi Pantai Normal &amp; Terkendali</strong>
+                <p>Parameter tinggi air laut, hembusan angin, dan getaran seismik berada dalam batas aman. Nelayan dan warga Desa Kunjir dapat beraktivitas di pesisir dengan normal.</p>
+            </div>
+        </div>`;
+        return;
+    }
+
+    const iconMap = { badai: 'fa-wind', gempa: 'fa-house-crack', tsunami: 'fa-water' };
+    panel.innerHTML = risikoList.map(r => `
+        <div class="ai-rec-card ${r.level.toLowerCase()}">
+            <div class="ai-rec-icon"><i class="fas ${iconMap[r.tipe] || 'fa-triangle-exclamation'}"></i></div>
+            <div class="ai-rec-body">
+                <strong>STATUS ${r.level} — ANCAMAN ${r.tipe.toUpperCase()}</strong>
+                <p>${r.alasan}</p>
+                <div style="margin-top:5px;font-size:.76rem;color:#f8fafc;font-weight:600;">
+                    <i class="fas fa-shield-halved" style="color:#34d399;"></i> Tindakan: ${r.langkah}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+/* ============================================================
+   LOG STREAM PERINGATAN
+   ============================================================ */
+function tambahAlert(r) {
+    const key = `${r.tipe}_${r.level}`;
+    const now = Date.now();
+    if (lastAlertTime[key] && now - lastAlertTime[key] < 60000) return;
+    lastAlertTime[key] = now;
+
+    alertHistory.unshift({ ...r, waktu: new Date().toLocaleTimeString('id-ID') + ' WIB' });
+    if (alertHistory.length > 25) alertHistory.pop();
+    totalAlerts++;
+
+    const countEl = document.getElementById('alertCount');
+    if (countEl) countEl.textContent = alertHistory.length + ' catatan';
+
+    renderAlerts();
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`[${r.level}] Peringatan Dini Pesisir Kunjir`, {
+            body: `${r.alasan} — ${r.langkah}`,
+            tag: key
+        });
+    }
+}
+
+function renderAlerts() {
+    const container = document.getElementById('alertHistory');
+    if (alertHistory.length === 0) {
+        container.innerHTML = `
+        <div class="empty-log-state">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Belum ada catatan bahaya atau anomali cuaca ekstrim hari ini.</span>
+        </div>`;
+        return;
+    }
+
+    const iconMap = { badai: 'fa-wind', gempa: 'fa-house-crack', tsunami: 'fa-water' };
+    container.innerHTML = alertHistory.map(a => `
+        <div class="log-item-entry ${a.level}">
+            <div class="log-item-title">
+                <i class="fas ${iconMap[a.tipe] || 'fa-bell'}"></i>
+                [${a.level}] ${a.tipe.toUpperCase()}
+            </div>
+            <div class="log-item-desc">${a.alasan}</div>
+            <div class="log-item-time"><i class="fas fa-clock"></i> ${a.waktu}</div>
+        </div>
+    `).join('');
+}
+
+/* ============================================================
+   CHART.JS: VISUALISASI DATA TELEMETRI KONTINU
+   ============================================================ */
+function initChart() {
+    const ctx = document.getElementById('sensorChart').getContext('2d');
+
+    const gradSea = ctx.createLinearGradient(0, 0, 0, 300);
+    gradSea.addColorStop(0, 'rgba(2, 132, 199, 0.25)');
+    gradSea.addColorStop(1, 'rgba(2, 132, 199, 0.01)');
+
+    const gradWind = ctx.createLinearGradient(0, 0, 0, 300);
+    gradWind.addColorStop(0, 'rgba(245, 158, 11, 0.2)');
+    gradWind.addColorStop(1, 'rgba(245, 158, 11, 0.01)');
+
+    const gradPGA = ctx.createLinearGradient(0, 0, 0, 300);
+    gradPGA.addColorStop(0, 'rgba(239, 68, 68, 0.25)');
+    gradPGA.addColorStop(1, 'rgba(239, 68, 68, 0.01)');
+
+    const gradBaro = ctx.createLinearGradient(0, 0, 0, 300);
+    gradBaro.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+    gradBaro.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Tinggi Air (cm)',
+                    data: [],
+                    borderColor: '#38bdf8',
+                    backgroundColor: gradSea,
+                    borderWidth: 2.2,
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#38bdf8',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 2
+                },
+                {
+                    label: 'Angin (km/j)',
+                    data: [],
+                    borderColor: '#fbbf24',
+                    backgroundColor: gradWind,
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#fbbf24',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 2
+                },
+                {
+                    label: 'PGA Seismik (×100g)',
+                    data: [],
+                    borderColor: '#f87171',
+                    backgroundColor: gradPGA,
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#f87171',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 2
+                },
+                {
+                    label: 'Tekanan Udara (hPa/10)',
+                    data: [],
+                    borderColor: '#34d399',
+                    backgroundColor: gradBaro,
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#34d399',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 0 },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        color: '#cbd5e1',
+                        font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' },
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 16
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(13, 23, 40, 0.95)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#cbd5e1',
+                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: { size: 11, weight: '700', family: 'Plus Jakarta Sans' },
+                    bodyFont: { size: 11, family: 'JetBrains Mono' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#94a3b8', maxTicksLimit: 7, font: { size: 10, family: 'JetBrains Mono' } },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)', drawTicks: false },
+                    border: { display: false }
+                },
+                y: {
+                    ticks: { color: '#94a3b8', font: { size: 10, family: 'JetBrains Mono' } },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)', drawTicks: false },
+                    border: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function updateChart(data) {
+    if (!chart) initChart();
+    const t = new Date(data.recorded_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    chart.data.labels.push(t);
+    chart.data.datasets[0].data.push(data.water_level_cm);
+    chart.data.datasets[1].data.push(data.wind_speed_kmh);
+    chart.data.datasets[2].data.push(data.pga_g * 100);
+    chart.data.datasets[3].data.push(data.pressure_hpa / 10);
+
+    if (chart.data.labels.length > CFG.MAX_CHART) {
+        chart.data.labels.shift();
+        chart.data.datasets.forEach(ds => ds.data.shift());
+    }
+    chart.update('none');
+}
+
+/* ============================================================
+   TOGGLE FOTO LATAR (FOTO ASLI DRONE / SATELIT DESA KUNJIR)
+   ============================================================ */
+function initBgToggle() {
+    let current = 'ai';
+    const bg = document.getElementById('bgPhotoElement');
+    const btn = document.getElementById('toggleBgBtn');
+    const text = document.getElementById('bgBtnText');
+    if (!btn || !bg) return;
+
+    btn.addEventListener('click', () => {
+        if (current === 'ai') {
+            bg.style.backgroundImage = "url('kunjir-user.png')";
+            text.textContent = 'Foto Lanskap';
+            current = 'user';
+            showToast("Beralih ke Foto Udara Asli Desa Kunjir", 'fa-camera', 'var(--ocean-light)');
+        } else {
+            bg.style.backgroundImage = "url('bg-kunjir.jpg')";
+            text.textContent = 'Foto Drone Asli';
+            current = 'ai';
+            showToast("Beralih ke Foto Pesisir Desa Kunjir", 'fa-camera', 'var(--ocean-light)');
+        }
+    });
+}
+
+/* ============================================================
+   DATA AKUN SPREADSHEET & PENYIMPANAN
+   ============================================================ */
+const DEFAULT_SHEET_ACCOUNTS = [
+    { id: 'USR-1001', nama: 'Budi Hartono', email: 'budi.hartono@gmail.com', role: 'Petugas Posko BMKG', wa: '0812-7788-9901', waktu: '15/10/2026 09:15 WIB', status: 'Terverifikasi Google' },
+    { id: 'USR-1002', nama: 'Siti Rahma', email: 'siti.rahma@gmail.com', role: 'Relawan Siaga Desa Kunjir', wa: '0852-1122-3344', waktu: '15/10/2026 08:40 WIB', status: 'Terverifikasi Google' },
+    { id: 'USR-1003', nama: 'Ahmad Fauzi', email: 'ahmad.fauzi@gmail.com', role: 'Warga Desa Kunjir', wa: '0878-9900-1122', waktu: '14/10/2026 21:10 WIB', status: 'Terverifikasi Google' },
+    { id: 'USR-1004', nama: 'Hendra Wijaya', email: 'hendra.wijaya@gmail.com', role: 'Admin Sistem TsunamiAI', wa: '0811-2233-4455', waktu: '14/10/2026 19:30 WIB', status: 'Terverifikasi Google' }
+];
+
+function getStoredUsers() {
+    try {
+        const raw = localStorage.getItem('wave_kunjir_sheet_users');
+        if (!raw) {
+            localStorage.setItem('wave_kunjir_sheet_users', JSON.stringify(DEFAULT_SHEET_ACCOUNTS));
+            return DEFAULT_SHEET_ACCOUNTS;
+        }
+        return JSON.parse(raw);
+    } catch(e) {
+        return DEFAULT_SHEET_ACCOUNTS;
+    }
+}
+
+function saveStoredUsers(users) {
+    localStorage.setItem('wave_kunjir_sheet_users', JSON.stringify(users));
+    updateSheetBadges();
+}
+
+function getCurrentUser() {
+    try {
+        const raw = localStorage.getItem('wave_kunjir_active_user');
+        return raw ? JSON.parse(raw) : null;
+    } catch(e) {
+        return null;
+    }
+}
+
+function setCurrentUser(user) {
+    if (user) {
+        localStorage.setItem('wave_kunjir_active_user', JSON.stringify(user));
+    } else {
+        localStorage.removeItem('wave_kunjir_active_user');
+    }
+    updateHeaderUserUI();
+}
+
+function updateSheetBadges() {
+    const users = getStoredUsers();
+    const count = users.length;
+    const badge1 = document.getElementById('sheetHeaderBadge');
+    const badge2 = document.getElementById('sheetStatsTotal');
+    if (badge1) badge1.textContent = count;
+    if (badge2) badge2.textContent = count;
+}
+
+function updateHeaderUserUI() {
+    const user = getCurrentUser();
+    const pill = document.getElementById('headerUserPill');
+    const nameEl = document.getElementById('headerUserName');
+    const roleEl = document.getElementById('headerUserRole');
+    const avatarEl = document.getElementById('headerUserAvatar');
+
+    if (user && pill) {
+        nameEl.textContent = user.nama || 'Pengguna';
+        roleEl.textContent = user.role || 'Warga';
+        const initials = (user.nama || 'U').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        avatarEl.textContent = initials;
+        pill.style.display = 'inline-flex';
+    } else if (pill) {
+        pill.style.display = 'none';
+    }
+}
+
+function showToast(msg, iconClass = 'fa-circle-check', color = '#34d399') {
+    const toast = document.getElementById('toastNotif');
+    const text = document.getElementById('toastText');
+    if (!toast) return;
+
+    toast.querySelector('i').className = `fas ${iconClass}`;
+    toast.querySelector('i').style.color = color;
+    text.textContent = msg;
+
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3200);
+}
+
+/* ============================================================
+   AUTENTIKASI & AKUN HANDLERS
+   ============================================================ */
+function processSuccessfulLogin(userData) {
+    const users = getStoredUsers();
+    const nowStr = new Date().toLocaleDateString('id-ID') + ' ' + new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) + ' WIB';
+
+    const existingIdx = users.findIndex(u => u.email.toLowerCase() === userData.email.toLowerCase());
+    if (existingIdx >= 0) {
+        users[existingIdx].waktu = nowStr;
+        users[existingIdx].status = 'Terverifikasi Google (Aktif)';
+        if (userData.wa) users[existingIdx].wa = userData.wa;
+        if (userData.role) users[existingIdx].role = userData.role;
+    } else {
+        const newId = 'USR-' + Math.floor(1000 + Math.random() * 9000);
+        users.unshift({
+            id: newId,
+            nama: userData.nama,
+            email: userData.email,
+            role: userData.role || 'Warga Desa Kunjir',
+            wa: userData.wa || '0812-0000-0000',
+            waktu: nowStr,
+            status: 'Terverifikasi Google'
+        });
+    }
+
+    saveStoredUsers(users);
+    setCurrentUser(userData);
+    syncToExternalWebhook(userData);
+
+    const loginScreen = document.getElementById('loginScreen');
+    if (loginScreen) loginScreen.classList.add('hidden');
+
+    showToast(`Selamat datang, ${userData.nama}! Terhubung ke Posko.`, 'fa-circle-check', '#34d399');
+}
+
+/* ============================================================
+   KREDENSIAL, KATA SANDI & AUTO-FILL OTOMATIS
+   ============================================================ */
+const DEFAULT_SAVED_CREDS = {
+    'budi.hartono@gmail.com': {
+        email: 'budi.hartono@gmail.com',
+        sandi: 'kunjir123',
+        nama: 'Budi Hartono',
+        role: 'Petugas Posko BMKG',
+        wa: '0812-7788-9901'
+    },
+    'siti.rahma@gmail.com': {
+        email: 'siti.rahma@gmail.com',
+        sandi: 'relawan2026',
+        nama: 'Siti Rahma',
+        role: 'Relawan Siaga Desa Kunjir',
+        wa: '0852-1122-3344'
+    },
+    'ahmad.fauzi@gmail.com': {
+        email: 'ahmad.fauzi@gmail.com',
+        sandi: 'warga123',
+        nama: 'Ahmad Fauzi',
+        role: 'Warga Desa Kunjir (RT 02)',
+        wa: '0878-9900-1122'
+    },
+    'hendra.wijaya@gmail.com': {
+        email: 'hendra.wijaya@gmail.com',
+        sandi: 'admin2026',
+        nama: 'Hendra Wijaya',
+        role: 'Admin Sistem TsunamiAI',
+        wa: '0811-2233-4455'
+    }
+};
+
+function getSavedCredentials() {
+    try {
+        const raw = localStorage.getItem('wave_kunjir_saved_credentials');
+        if (!raw) {
+            localStorage.setItem('wave_kunjir_saved_credentials', JSON.stringify(DEFAULT_SAVED_CREDS));
+            return { ...DEFAULT_SAVED_CREDS };
+        }
+        return JSON.parse(raw);
+    } catch(e) {
+        return { ...DEFAULT_SAVED_CREDS };
+    }
+}
+
+function saveCredential(email, sandi, nama, role, wa) {
+    const creds = getSavedCredentials();
+    const cleanEmail = email.trim().toLowerCase();
+    creds[cleanEmail] = {
+        email: cleanEmail,
+        sandi: sandi,
+        nama: nama || cleanEmail.split('@')[0],
+        role: role || 'Warga Desa Kunjir',
+        wa: wa || '0812-0000-0000',
+        savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('wave_kunjir_saved_credentials', JSON.stringify(creds));
+    localStorage.setItem('wave_kunjir_last_creds', JSON.stringify({ email: cleanEmail, sandi: sandi }));
+    renderSavedAccountsList();
+}
+
+/**
+ * Validasi apakah email sudah terdaftar dalam sistem posko (Spreadsheet atau Saved Credentials)
+ */
+function isEmailRegistered(email) {
+    if (!email) return false;
+    const cleanEmail = email.trim().toLowerCase();
+    const users = getStoredUsers();
+    const creds = getSavedCredentials();
+
+    const inUsers = users.some(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+    const inCreds = Object.keys(creds).some(k => k.trim().toLowerCase() === cleanEmail);
+
+    return inUsers || inCreds;
+}
+
+function showLoginAlert(title, message) {
+    const box = document.getElementById('loginAlertBox');
+    const t = document.getElementById('loginAlertTitle');
+    const m = document.getElementById('loginAlertMsg');
+    if (!box) return;
+
+    if (t) t.textContent = title;
+    if (m) m.textContent = message;
+    box.style.display = 'block';
+
+    const card = document.querySelector('.login-card');
+    if (card) {
+        card.style.animation = 'none';
+        void card.offsetWidth;
+        card.style.animation = 'loginShake 0.4s ease';
+    }
+}
+
+function hideLoginAlert() {
+    const box = document.getElementById('loginAlertBox');
+    if (box) box.style.display = 'none';
+}
+
+function switchLoginTab(tab) {
+    const loginForm = document.getElementById('emailPasswordLoginForm');
+    const regForm = document.getElementById('registerUserForm');
+    const tabLoginBtn = document.getElementById('tabLoginBtn');
+    const tabRegBtn = document.getElementById('tabRegisterBtn');
+    const savedSection = document.querySelector('.demo-account-section');
+    const savedHeader = document.getElementById('savedAccountsHeader');
+
+    hideLoginAlert();
+
+    if (tab === 'register') {
+        if (loginForm) loginForm.style.display = 'none';
+        if (regForm) regForm.style.display = 'block';
+        if (tabLoginBtn) tabLoginBtn.classList.remove('active');
+        if (tabRegBtn) tabRegBtn.classList.add('active');
+        if (savedSection) savedSection.style.display = 'none';
+        if (savedHeader) savedHeader.style.display = 'none';
+        const regNama = document.getElementById('regNama');
+        if (regNama) regNama.focus();
+    } else {
+        if (loginForm) loginForm.style.display = 'block';
+        if (regForm) regForm.style.display = 'none';
+        if (tabLoginBtn) tabLoginBtn.classList.add('active');
+        if (tabRegBtn) tabRegBtn.classList.remove('active');
+        if (savedSection) savedSection.style.display = 'block';
+        if (savedHeader) savedHeader.style.display = 'flex';
+    }
+}
+
+function handleUserRegistration(e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    hideLoginAlert();
+
+    const nama = (document.getElementById('regNama')?.value || '').trim();
+    const email = (document.getElementById('regEmail')?.value || '').trim().toLowerCase();
+    const sandi = document.getElementById('regPassword')?.value || '';
+    const role = document.getElementById('regRole')?.value || 'Warga Desa Kunjir';
+    const wa = (document.getElementById('regWa')?.value || '').trim() || '0812-3456-7890';
+
+    if (!nama || !email || !sandi) {
+        showToast("Mohon lengkapi semua data pendaftaran!", 'fa-circle-exclamation', '#f87171');
+        return;
+    }
+
+    if (sandi.length < 4) {
+        showToast("Kata sandi minimal 4 karakter!", 'fa-lock', '#f87171');
+        return;
+    }
+
+    // Periksa apakah email sudah terdaftar
+    if (isEmailRegistered(email)) {
+        showLoginAlert(
+            "Email Sudah Terdaftar",
+            `Email "${email}" sudah ada dalam daftar akun posko! Silakan beralih ke tab 'Masuk Akun' untuk login.`
+        );
+        showToast("Email sudah terdaftar! Silakan login.", 'fa-info-circle', 'var(--ocean-light)');
+        switchLoginTab('login');
+        const loginEmail = document.getElementById('loginEmail');
+        if (loginEmail) {
+            loginEmail.value = email;
+            handleEmailInputAutoFill();
+        }
+        return;
+    }
+
+    // Simpan kredensial & masukkan ke database spreadsheet posko
+    saveCredential(email, sandi, nama, role, wa);
+
+    processSuccessfulLogin({
+        nama: nama,
+        email: email,
+        role: role,
+        wa: wa,
+        sandi: sandi
+    });
+
+    showToast(`Registrasi berhasil! Akun ${nama} aktif.`, 'fa-circle-check', '#34d399');
+}
+
+function handleEmailInputAutoFill() {
+    hideLoginAlert();
+    const emailInput = document.getElementById('loginEmail');
+    const pwdInput = document.getElementById('loginPassword');
+    const badge = document.getElementById('autoFilledBadge');
+    if (!emailInput || !pwdInput) return;
+
+    const email = emailInput.value.trim().toLowerCase();
+    const creds = getSavedCredentials();
+
+    if (creds[email]) {
+        pwdInput.value = creds[email].sandi;
+        if (badge) badge.style.display = 'inline-flex';
+    } else {
+        if (badge) badge.style.display = 'none';
+    }
+}
+
+function selectSavedAccount(email) {
+    hideLoginAlert();
+    const emailInput = document.getElementById('loginEmail');
+    const pwdInput = document.getElementById('loginPassword');
+    const creds = getSavedCredentials();
+    const c = creds[email.toLowerCase()];
+
+    if (emailInput && pwdInput && c) {
+        emailInput.value = c.email;
+        pwdInput.value = c.sandi;
+        const badge = document.getElementById('autoFilledBadge');
+        if (badge) badge.style.display = 'inline-flex';
+
+        // Auto-login setelah akun diklik
+        handleEmailPasswordLogin(new Event('submit'));
+    }
+}
+
+function deleteSavedCredential(email, e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!confirm(`Hapus akun tersimpan "${email}" dari memori browser?`)) return;
+
+    const creds = getSavedCredentials();
+    const cleanEmail = email.toLowerCase();
+    delete creds[cleanEmail];
+    localStorage.setItem('wave_kunjir_saved_credentials', JSON.stringify(creds));
+
+    try {
+        const lastRaw = localStorage.getItem('wave_kunjir_last_creds');
+        if (lastRaw) {
+            const last = JSON.parse(lastRaw);
+            if (last.email && last.email.toLowerCase() === cleanEmail) {
+                localStorage.removeItem('wave_kunjir_last_creds');
+                const emailInput = document.getElementById('loginEmail');
+                const pwdInput = document.getElementById('loginPassword');
+                const badge = document.getElementById('autoFilledBadge');
+                if (emailInput) emailInput.value = '';
+                if (pwdInput) pwdInput.value = '';
+                if (badge) badge.style.display = 'none';
+            }
+        }
+    } catch(err) {}
+
+    renderSavedAccountsList();
+    showToast(`Akun ${email} dihapus dari daftar tersimpan.`, 'fa-trash-can', '#f87171');
+}
+
+function renderSavedAccountsList() {
+    const container = document.getElementById('savedAccountsContainer');
+    const dataList = document.getElementById('savedEmailsList');
+    const creds = getSavedCredentials();
+    const keys = Object.keys(creds);
+
+    // Update Datalist Autocomplete
+    if (dataList) {
+        dataList.innerHTML = keys.map(k => {
+            const item = creds[k];
+            return `<option value="${item.email}">${item.nama} (${item.role})</option>`;
+        }).join('');
+    }
+
+    if (!container) return;
+
+    if (keys.length === 0) {
+        container.innerHTML = `
+            <div style="font-size:0.75rem;color:var(--text-dim);text-align:center;padding:12px;width:100%;background:rgba(255,255,255,0.02);border-radius:8px;border:1px dashed var(--border);">
+                <i class="fas fa-info-circle" style="color:var(--ocean-light);"></i> Belum ada akun tersimpan. Masuk dengan email & kata sandi di atas untuk menyimpan akun secara otomatis.
+            </div>`;
+        return;
+    }
+
+    const colors = ['#059669', '#d97706', '#0284c7', '#7c3aed', '#db2777'];
+
+    container.innerHTML = keys.map((key, i) => {
+        const item = creds[key];
+        const initials = (item.nama || 'U').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const bg = colors[i % colors.length];
+
+        return `
+            <div class="demo-item" onclick="selectSavedAccount('${item.email}')" title="Klik untuk auto-fill sandi & masuk otomatis" style="position:relative;">
+                <div class="demo-avatar" style="background:${bg};">${initials}</div>
+                <div class="demo-meta">
+                    <div class="demo-name">${item.nama}</div>
+                    <div class="demo-role">${item.email} · <strong style="color:var(--ocean-light);">${item.role}</strong></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+                    <span style="font-size:.68rem;color:#34d399;font-weight:700;display:flex;align-items:center;gap:4px;background:rgba(52,211,153,0.1);padding:3px 7px;border-radius:100px;">
+                        <i class="fas fa-key"></i> Auto-Fill
+                    </span>
+                    <button type="button" onclick="deleteSavedCredential('${item.email}', event)" title="Hapus Akun Tersimpan" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px 6px;border-radius:4px;transition:color 0.15s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='var(--text-dim)'">
+                        <i class="fas fa-trash-can" style="font-size:0.76rem;"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function populateInitialCredentials() {
+    const emailInput = document.getElementById('loginEmail');
+    const pwdInput = document.getElementById('loginPassword');
+    const badge = document.getElementById('autoFilledBadge');
+    if (!emailInput || !pwdInput) return;
+
+    try {
+        const lastRaw = localStorage.getItem('wave_kunjir_last_creds');
+        if (lastRaw) {
+            const last = JSON.parse(lastRaw);
+            if (last && last.email && isEmailRegistered(last.email)) {
+                emailInput.value = last.email;
+                if (last.sandi) {
+                    pwdInput.value = last.sandi;
+                    if (badge) badge.style.display = 'inline-flex';
+                }
+                return;
+            }
+        }
+    } catch(e) {}
+
+    // Fallback ke akun default pertama jika belum pernah login
+    const creds = getSavedCredentials();
+    const firstKey = Object.keys(creds)[0];
+    if (firstKey && creds[firstKey]) {
+        emailInput.value = creds[firstKey].email;
+        pwdInput.value = creds[firstKey].sandi;
+        if (badge) badge.style.display = 'inline-flex';
+    }
+}
+
+function togglePasswordVisibility(inputId = 'loginPassword', iconId = 'pwdEyeIcon') {
+    const pwdInput = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!pwdInput) return;
+
+    if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        if (icon) icon.className = 'fas fa-eye-slash';
+    } else {
+        pwdInput.type = 'password';
+        if (icon) icon.className = 'fas fa-eye';
+    }
+}
+
+function handleEmailPasswordLogin(e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    hideLoginAlert();
+
+    const emailInput = document.getElementById('loginEmail');
+    const pwdInput = document.getElementById('loginPassword');
+
+    const email = (emailInput?.value || '').trim();
+    const sandi = pwdInput?.value || '';
+
+    if (!email || !sandi) {
+        showToast("Mohon masukkan email dan kata sandi!", 'fa-circle-exclamation', '#f87171');
+        return;
+    }
+
+    const cleanEmail = email.toLowerCase();
+
+    // 1. CEK APAKAH EMAIL TERDAFTAR (SISTEM OTOMATIS TIDAK DAPAT LOGIN JIKA BELUM TERDAFTAR)
+    if (!isEmailRegistered(cleanEmail)) {
+        showLoginAlert(
+            "Akses Masuk Ditolak: Email Belum Terdaftar",
+            `Email "${email}" belum pernah terdaftar di sistem posko Desa Kunjir. Anda belum pernah membuat akun atau menggunakan email ini untuk login. Silakan buat akun baru terlebih dahulu melalui tab 'Buat Akun Baru' di atas.`
+        );
+        showToast("Email belum terdaftar! Akses login otomatis ditolak.", 'fa-circle-xmark', '#ef4444');
+        return;
+    }
+
+    // 2. CEK KATA SANDI
+    const creds = getSavedCredentials();
+    const existingCred = creds[cleanEmail];
+    const users = getStoredUsers();
+    const foundUser = users.find(u => (u.email || '').toLowerCase() === cleanEmail);
+
+    if (existingCred && existingCred.sandi && existingCred.sandi !== sandi) {
+        showLoginAlert(
+            "Kata Sandi Tidak Sesuai",
+            `Kata sandi yang Anda masukkan salah untuk akun "${cleanEmail}". Periksa kembali huruf besar/kecil atau hubungi petugas posko.`
+        );
+        showToast("Kata sandi salah! Periksa kembali.", 'fa-lock', '#ef4444');
+        return;
+    }
+
+    let nama = existingCred ? existingCred.nama : (foundUser ? foundUser.nama : '');
+    if (!nama) {
+        const prefix = cleanEmail.split('@')[0].replace(/[._-]/g, ' ');
+        nama = prefix.replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    let role = existingCred ? existingCred.role : (foundUser ? foundUser.role : 'Petugas / Warga Desa Kunjir');
+    let wa = existingCred ? existingCred.wa : (foundUser ? foundUser.wa : '0812-3456-7890');
+
+    // Selalu simpan kredensial secara otomatis agar pengguna dapat langsung auto-fill di kemudian hari
+    saveCredential(cleanEmail, sandi, nama, role, wa);
+
+    processSuccessfulLogin({
+        nama: nama,
+        email: cleanEmail,
+        role: role,
+        wa: wa,
+        sandi: sandi
+    });
+}
+
+function handleQuickLogin(nama, email, role, wa) {
+    processSuccessfulLogin({ nama, email, role, wa });
+}
+
+function handleGoogleBtnClick() {
+    hideLoginAlert();
+    const emailPrompt = prompt("Masukkan Email Akun Google Anda:", "budi.hartono@gmail.com");
+    if (!emailPrompt) return;
+
+    const cleanEmail = emailPrompt.trim().toLowerCase();
+
+    // CEK APAKAH AKUN GOOGLE INI SUDAH PERNAH TERDAFTAR DI SISTEM
+    if (!isEmailRegistered(cleanEmail)) {
+        showLoginAlert(
+            "Akun Google Belum Pernah Terdaftar",
+            `Akun Google "${cleanEmail}" belum pernah didaftarkan atau digunakan pada sistem WAVE KUNJIR. Sistem otomatis tidak mengizinkan login karena email belum terdaftar dalam database posko. Silakan buat akun baru terlebih dahulu.`
+        );
+        showToast("Akun Google belum terdaftar dalam sistem posko!", 'fa-circle-xmark', '#ef4444');
+        return;
+    }
+
+    const creds = getSavedCredentials();
+    const existingCred = creds[cleanEmail];
+    const users = getStoredUsers();
+    const foundUser = users.find(u => (u.email || '').toLowerCase() === cleanEmail);
+
+    const nama = existingCred?.nama || foundUser?.nama || cleanEmail.split('@')[0];
+    const role = existingCred?.role || foundUser?.role || 'Pengguna Terverifikasi Google';
+    const wa = existingCred?.wa || foundUser?.wa || '0812-9988-7766';
+    const sandi = existingCred?.sandi || 'kunjir123';
+
+    saveCredential(cleanEmail, sandi, nama, role, wa);
+
+    processSuccessfulLogin({
+        nama: nama,
+        email: cleanEmail,
+        role: role,
+        wa: wa,
+        sandi: sandi
+    });
+}
+
+function handleGuestLogin() {
+    setCurrentUser({
+        nama: 'Tamu Posko',
+        email: 'tamu@posko.kunjir.id',
+        role: 'Mode Peninjau Tamu',
+        wa: '-'
+    });
+    const loginScreen = document.getElementById('loginScreen');
+    if (loginScreen) loginScreen.classList.add('hidden');
+    showToast("Masuk dalam Mode Tamu (Peninjau)", 'fa-eye', 'var(--ocean-light)');
+}
+
+function handleLogout() {
+    if (!confirm("Keluar dari sesi akun saat ini?")) return;
+    setCurrentUser(null);
+    const loginScreen = document.getElementById('loginScreen');
+    if (loginScreen) {
+        loginScreen.classList.remove('hidden');
+        renderSavedAccountsList();
+        populateInitialCredentials();
+    }
+    showToast("Anda telah keluar dari sesi.", 'fa-arrow-right-from-bracket', '#f59e0b');
+}
+
+/* ============================================================
+   SPREADSHEET UI & MANAJEMEN DATA
+   ============================================================ */
+function openSpreadsheet() {
+    const modal = document.getElementById('spreadsheetModal');
+    if (!modal) return;
+    modal.classList.add('open');
+    renderSheetTable();
+}
+
+function closeSpreadsheet() {
+    const modal = document.getElementById('spreadsheetModal');
+    if (modal) modal.classList.remove('open');
+}
+
+function getRoleBadgeClass(role) {
+    const r = (role || '').toLowerCase();
+    if (r.includes('petugas')) return 'role-petugas';
+    if (r.includes('relawan')) return 'role-relawan';
+    if (r.includes('admin'))   return 'role-admin';
+    return 'role-warga';
+}
+
+function renderSheetTable(filterQuery = '', roleFilter = '') {
+    const tbody = document.getElementById('sheetTableBody');
+    if (!tbody) return;
+
+    let users = getStoredUsers();
+
+    if (filterQuery) {
+        const q = filterQuery.toLowerCase();
+        users = users.filter(u =>
+            u.nama.toLowerCase().includes(q) ||
+            u.email.toLowerCase().includes(q) ||
+            u.role.toLowerCase().includes(q) ||
+            u.wa.includes(q)
+        );
+    }
+
+    if (roleFilter) {
+        const rf = roleFilter.toLowerCase();
+        users = users.filter(u => u.role.toLowerCase().includes(rf));
+    }
+
+    if (users.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
+                    <i class="fas fa-inbox" style="font-size:1.8rem;opacity:.5;display:block;margin-bottom:8px;"></i>
+                    Tidak ada akun yang cocok dengan kata kunci pencarian
+                </td>
+            </tr>`;
+        return;
+    }
+
+    tbody.innerHTML = users.map((u, i) => {
+        const initials = (u.nama || 'U').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const roleCls = getRoleBadgeClass(u.role);
+        return `
+            <tr>
+                <td style="font-family:'JetBrains Mono';color:var(--text-dim);text-align:center;">${i + 1}</td>
+                <td style="font-family:'JetBrains Mono';color:var(--ocean-light);font-weight:700;">${u.id}</td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="width:24px;height:24px;border-radius:50%;background:#0284c7;display:inline-flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:800;color:#fff;">${initials}</span>
+                        <strong style="color:#ffffff;">${u.nama}</strong>
+                    </div>
+                </td>
+                <td style="font-family:'JetBrains Mono';color:var(--text-muted);">${u.email}</td>
+                <td><span class="sheet-role-pill ${roleCls}">${u.role}</span></td>
+                <td style="font-family:'JetBrains Mono';color:var(--text-muted);">${u.wa}</td>
+                <td style="font-family:'JetBrains Mono';font-size:.74rem;color:var(--text-dim);">${u.waktu}</td>
+                <td><span style="display:inline-flex;align-items:center;gap:4px;color:#34d399;font-size:.72rem;"><i class="fas fa-circle-check"></i> ${u.status || 'Aktif'}</span></td>
+                <td style="text-align:center;">
+                    <button onclick="deleteSheetRow('${u.id}')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px;" title="Hapus Akun">
+                        <i class="fas fa-trash-can" style="font-size:.82rem;"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    updateSheetBadges();
+}
+
+function filterSheetTable() {
+    const q = (document.getElementById('sheetSearchInput')?.value || '').trim();
+    const rf = document.getElementById('sheetRoleFilter')?.value || '';
+    renderSheetTable(q, rf);
+}
+
+function deleteSheetRow(userId) {
+    if (!confirm(`Hapus baris akun ID ${userId} dari Spreadsheet?`)) return;
+    let users = getStoredUsers();
+    const target = users.find(u => u.id === userId);
+    users = users.filter(u => u.id !== userId);
+    saveStoredUsers(users);
+
+    if (target && target.email) {
+        const creds = getSavedCredentials();
+        delete creds[target.email.toLowerCase()];
+        localStorage.setItem('wave_kunjir_saved_credentials', JSON.stringify(creds));
+        renderSavedAccountsList();
+    }
+
+    renderSheetTable();
+    showToast(`Akun ${userId} dihapus dari Spreadsheet.`, 'fa-trash-can', '#f87171');
+}
+
+function downloadSheetCSV() {
+    const users = getStoredUsers();
+    if (users.length === 0) {
+        alert("Belum ada data untuk diunduh!");
+        return;
+    }
+
+    const headers = ["No", "ID", "Nama Lengkap", "Email Google", "Peran / Jabatan", "No WhatsApp", "Waktu Registrasi", "Status"];
+    const rows = users.map((u, i) => [
+        i + 1,
+        `"${u.id}"`,
+        `"${u.nama}"`,
+        `"${u.email}"`,
+        `"${u.role}"`,
+        `"${u.wa}"`,
+        `"${u.waktu}"`,
+        `"${u.status || 'Aktif'}"`
+    ]);
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Data_Akun_Posko_WAVE_KUNJIR_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast("File Spreadsheet CSV berhasil diunduh!", 'fa-file-excel', '#34d399');
+}
+
+function toggleWebhookBox() {
+    const box = document.getElementById('webhookBox');
+    if (!box) return;
+    box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    if (box.style.display === 'block') {
+        const saved = localStorage.getItem('wave_kunjir_webhook_url') || '';
+        document.getElementById('webhookUrlInput').value = saved;
+    }
+}
+
+function saveWebhookUrl() {
+    const input = document.getElementById('webhookUrlInput');
+    const val = (input?.value || '').trim();
+    if (!val) {
+        localStorage.removeItem('wave_kunjir_webhook_url');
+        showToast("Webhook Google Sheets dinonaktifkan.", 'fa-info-circle', 'var(--text-muted)');
+    } else {
+        localStorage.setItem('wave_kunjir_webhook_url', val);
+        showToast("Webhook Google Sheets disimpan!", 'fa-link', 'var(--ocean-light)');
+    }
+    toggleWebhookBox();
+}
+
+function syncToExternalWebhook(user) {
+    const url = localStorage.getItem('wave_kunjir_webhook_url');
+    if (!url) return;
+
+    try {
+        fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user)
+        }).then(() => {
+            console.log("Data akun tersinkronisasi ke Google Apps Script.");
+        }).catch(err => {
+            console.warn("Sinkronisasi Webhook:", err);
+        });
+    } catch(e) {
+        console.warn("Gagal request webhook:", e);
+    }
+}
+
+/* ============================================================
+   LOOP UTAMA PEMANTAUAN SENSOR (RUNNING CONTINUOUSLY)
+   ============================================================ */
+function startMonitoring() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+    initChart();
+
+    setInterval(() => {
+        const data = generateSensor();
+        updateSensors(data);
+        updateChart(data);
+        const risiko = analisisAI(data);
+        updateBanner(risiko);
+        updateAI(risiko);
+        risiko.forEach(r => tambahAlert(r));
+    }, CFG.INTERVAL);
+}
+
+/* ============================================================
+   INISIALISASI SAAT HALAMAN DIBUKA
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+    updateClock();
+    setInterval(updateClock, 1000);
+    initBgToggle();
+    updateSheetBadges();
+
+    // Render daftar akun tersimpan dan isi otomatis kredensial
+    renderSavedAccountsList();
+    populateInitialCredentials();
+
+    const user = getCurrentUser();
+    const loginScreen = document.getElementById('loginScreen');
+    if (user) {
+        updateHeaderUserUI();
+        if (loginScreen) loginScreen.classList.add('hidden');
+    } else {
+        if (loginScreen) loginScreen.classList.remove('hidden');
+    }
+
+    // Shortcut Keyboard: Ctrl + Shift + S untuk buka Spreadsheet
+    window.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && (e.key === 'S' || e.key === 's')) {
+            e.preventDefault();
+            openSpreadsheet();
+        }
+    });
+
+    startMonitoring();
+    console.log('%cWAVE KUNJIR — Sistem Mitigasi & Peringatan Dini Pesisir', 'color:#38bdf8;font-size:16px;font-weight:800;');
+    console.log('%cStasiun Posko Desa Kunjir · Terintegrasi InaTEWS BMKG & BPBD Lampung Selatan', 'color:#34d399;font-size:12px;font-weight:600;');
+});
+</script>
+</body>
+</html>
